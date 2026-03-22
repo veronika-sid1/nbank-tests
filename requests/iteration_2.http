@@ -1,4 +1,4 @@
-git # DEPOSIT TESTS
+# DEPOSIT TESTS
 ### positive: user can deposit min 0.01
 
 POST http://localhost:4111/api/v1/accounts/deposit
