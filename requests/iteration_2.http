@@ -32,6 +32,28 @@ Content-Type: application/json
   "balance": 5000
 }
 
+### positive: user can deposit 4999.99
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 4999.99
+}
+
+### negative: user cannot deposit 5000.01
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 5000.01
+}
+
 ### negative: user cannot deposit more than 5000
 
 POST http://localhost:4111/api/v1/accounts/deposit
@@ -118,10 +140,10 @@ Content-Type: application/json
 {
   "senderAccountId": 5,
   "receiverAccountId": 4,
-  "amount": 9999
+  "amount": 1
 }
 
-### positive: user can transfer money to someone else's account
+### positive: user can transfer money to someone else's account + 9999 check
 
 POST http://localhost:4111/api/v1/accounts/transfer
 Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
@@ -130,7 +152,7 @@ Content-Type: application/json
 {
   "senderAccountId": 5,
   "receiverAccountId": 6,
-  "amount": 100
+  "amount": 9999
 }
 
 ### positive: user can transfer max 10000
@@ -156,6 +178,29 @@ Content-Type: application/json
   "receiverAccountId": 5,
   "amount": 0.01
 }
+
+### positive: user can transfer 9999.99
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 9999.99
+}
+
+### negative: user cannot transfer 10000.01
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 10000.01
+}
+
 
 ### negative: user cannot transfer more than 10000
 
