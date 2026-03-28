@@ -24,6 +24,7 @@ public class NameTest {
     @Test
     public void userCanSpecifyName() {
         String name = "Katya Smith";
+
         // создание пользователя
         given()
                 .contentType(ContentType.JSON)
@@ -31,7 +32,7 @@ public class NameTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "katyas",
+                          "username": "katyaas",
                           "password": "Katyas!#123",
                           "role": "USER"
                         }
@@ -47,7 +48,7 @@ public class NameTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "katyas",
+                          "username": "katyaas",
                           "password": "Katyas!#123",
                           "role": "USER"
                         }
@@ -75,6 +76,18 @@ public class NameTest {
                 .statusCode(HttpStatus.SC_OK)
                 .body("customer.name", Matchers.equalTo(name))
                 .body("message", Matchers.equalTo("Profile updated successfully"));
+
+        //проверяем что имя сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.equalTo(name));
     }
 
     // positive: user can edit name
@@ -89,7 +102,7 @@ public class NameTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "katee",
+                          "username": "katee123",
                           "password": "Katyass!#123",
                           "role": "USER"
                         }
@@ -105,7 +118,7 @@ public class NameTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "katee",
+                          "username": "katee123",
                           "password": "Katyass!#123",
                           "role": "USER"
                         }
@@ -150,6 +163,18 @@ public class NameTest {
                 .statusCode(HttpStatus.SC_OK)
                 .body("customer.name", Matchers.equalTo(edited))
                 .body("message", Matchers.equalTo("Profile updated successfully"));
+
+        //проверяем что имя сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.equalTo(edited));
     }
 
     //negative: user cannot enter one word for name
@@ -162,7 +187,7 @@ public class NameTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "katyas17",
+                          "username": "katyas1217",
                           "password": "Katyas!#123",
                           "role": "USER"
                         }
@@ -178,7 +203,7 @@ public class NameTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "katyas17",
+                          "username": "katyas1217",
                           "password": "Katyas!#123",
                           "role": "USER"
                         }
@@ -205,6 +230,18 @@ public class NameTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Name must contain two words with letters only"));
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 
     //negative: user cannot enter digits in name
@@ -260,6 +297,18 @@ public class NameTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Name must contain two words with letters only"));
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 
     //negative: user cannot enter empty name
@@ -315,6 +364,18 @@ public class NameTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Name must contain two words with letters only"));
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 
     //negative: user cannot enter two spaces in name
@@ -370,6 +431,18 @@ public class NameTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Name must contain two words with letters only"));
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 
     //negative: user cannot enter three words in name
@@ -425,6 +498,18 @@ public class NameTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Name must contain two words with letters only"));
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 
     //negative: user cannot enter special characters in name
@@ -480,6 +565,18 @@ public class NameTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Name must contain two words with letters only"));
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 
     // negative: unauthorized user cannot specify name
@@ -493,7 +590,7 @@ public class NameTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "katyas76543",
+                          "username": "katyas99",
                           "password": "Katyas!#123",
                           "role": "USER"
                         }
@@ -502,6 +599,24 @@ public class NameTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_CREATED);
+
+        //получаем токен юзера
+        String userAuthHeader = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "username": "katyas99",
+                          "password": "Katyas!#123",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/auth/login")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .header("Authorization");
 
         given()
                 .contentType(ContentType.JSON)
@@ -515,6 +630,18 @@ public class NameTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_UNAUTHORIZED);
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 
     //negative: user with invalid auth cannot specify name
@@ -528,7 +655,7 @@ public class NameTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "katyas444",
+                          "username": "katyas78781",
                           "password": "Katyas!#123",
                           "role": "USER"
                         }
@@ -537,6 +664,24 @@ public class NameTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_CREATED);
+
+        //получаем токен юзера
+        String userAuthHeader = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "username": "katyas78781",
+                          "password": "Katyas!#123",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/auth/login")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .header("Authorization");
 
         // указываем имя с невалидным токеном
         given()
@@ -552,5 +697,17 @@ public class NameTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_UNAUTHORIZED);
+
+        //проверяем что имя не сохранилось
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/profile")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("name", Matchers.nullValue());
     }
 }

@@ -30,7 +30,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "kolya123",
+                          "username": "kolya1238",
                           "password": "Kolya1!#123",
                           "role": "USER"
                         }
@@ -46,7 +46,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "kolya123",
+                          "username": "kolya1238",
                           "password": "Kolya1!#123",
                           "role": "USER"
                         }
@@ -88,7 +88,18 @@ public class DepositTest {
                 .statusCode(HttpStatus.SC_OK)
                 .body("transactions.type", Matchers.hasItem("DEPOSIT"))
                 .body("transactions.amount", Matchers.hasItem(0.01f))
-                .body("balance", Matchers.equalTo(0.01f)); //проверка состояния баланса
+                .body("balance", Matchers.equalTo(0.01f));
+
+        //проверяем баланс
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.01f));
     }
 
     // positive: user can deposit 4999
@@ -101,7 +112,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "pasha11",
+                          "username": "p2asha11",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -117,7 +128,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "pasha11",
+                          "username": "p2asha11",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -158,7 +169,19 @@ public class DepositTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK)
                 .body("transactions.type", Matchers.hasItem("DEPOSIT"))
-                .body("transactions.amount", Matchers.hasItem(4999.0f));
+                .body("transactions.amount", Matchers.hasItem(4999.0f))
+                .body("balance", Matchers.equalTo(4999.0f));
+
+        //проверяем баланс
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(4999.0f));
     }
 
     //positive: user can deposit max 5000
@@ -171,7 +194,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "pasha2",
+                          "username": "pasha285",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -187,7 +210,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "pasha2",
+                          "username": "pasha285",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -228,12 +251,24 @@ public class DepositTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK)
                 .body("transactions.type", Matchers.hasItem("DEPOSIT"))
-                .body("transactions.amount", Matchers.hasItem(5000.0f));
+                .body("transactions.amount", Matchers.hasItem(5000.0f))
+                .body("balance", Matchers.equalTo(5000.0f));
+
+        //проверяем баланс
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(5000.0f));
     }
 
-    //negative: user cannot deposit more than 5000
+    //positive: user can deposit 4999.99
     @Test
-    public void userCannotDepositAboveMaxLimit() {
+    public void userCanDepositAmountBelowMaxLimitFractional() {
         // создание пользователя
         given()
                 .contentType(ContentType.JSON)
@@ -241,7 +276,89 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "pasha21",
+                          "username": "dan1",
+                          "password": "Danya1!#12",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/admin/users")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED);
+
+        //получаем токен юзера
+        String userAuthHeader = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "username": "dan1",
+                          "password": "Danya1!#12",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/auth/login")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .header("Authorization");
+
+        //создаём аккаунт(счёт)
+        int accId = given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .post("http://localhost:4111/api/v1/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED)
+                .extract()
+                .jsonPath()
+                .getInt("id");
+
+        //проверяем, что в ответе добавилось значение 4999.99 с DEPOSIT
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "id": %d,
+                          "balance": 4999.99
+                        }
+                        """.formatted(accId))
+                .post("http://localhost:4111/api/v1/accounts/deposit")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("transactions.type", Matchers.hasItem("DEPOSIT"))
+                .body("transactions.amount", Matchers.hasItem(4999.99f))
+                .body("balance", Matchers.equalTo(4999.99f));
+
+        //проверяем баланс
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(4999.99f));
+    }
+
+    //negative: user cannot deposit 5000.01
+    @Test
+    public void userCannotDepositAboveMaxLimitFractional() {
+        // создание пользователя
+        given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
+                .body("""
+                        {
+                          "username": "pasha113",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -257,7 +374,87 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "pasha21",
+                          "username": "pasha113",
+                          "password": "Pasha1!#12",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/auth/login")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .header("Authorization");
+
+        //создаём аккаунт(счёт)
+        int accId = given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .post("http://localhost:4111/api/v1/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED)
+                .extract()
+                .jsonPath()
+                .getInt("id");
+
+        //проверяем, что в ответе вернулась ошибка
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "id": %d,
+                          "balance": 5000.01
+                        }
+                        """.formatted(accId))
+                .post("http://localhost:4111/api/v1/accounts/deposit")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_BAD_REQUEST)
+                .body(Matchers.equalTo("Deposit amount cannot exceed 5000"));
+
+        //проверяем, что баланс не изменился
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
+    }
+
+    //negative: user cannot deposit more than 5000
+    @Test
+    public void userCannotDepositAboveMaxLimit() {
+        // создание пользователя
+        given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
+                .body("""
+                        {
+                          "username": "pasha213",
+                          "password": "Pasha1!#12",
+                          "role": "USER"
+                        }
+                        """)
+                .post("http://localhost:4111/api/v1/admin/users")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED);
+
+        //получаем токен юзера
+        String userAuthHeader = given()
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("""
+                        {
+                          "username": "pasha213",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -298,6 +495,17 @@ public class DepositTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Deposit amount cannot exceed 5000"));
+
+        //проверяем, что баланс не изменился
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
     }
 
     // negative: user cannot deposit zero amount
@@ -310,7 +518,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "pasha3",
+                          "username": "pasha31",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -326,7 +534,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "pasha3",
+                          "username": "pasha31",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -367,6 +575,17 @@ public class DepositTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Deposit amount must be at least 0.01"));
+
+        //проверяем, что баланс не изменился
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
     }
 
     // negative: user cannot deposit negative amount
@@ -379,7 +598,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "pasha4",
+                          "username": "pasha411",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -395,7 +614,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "pasha4",
+                          "username": "pasha411",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -436,6 +655,17 @@ public class DepositTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST)
                 .body(Matchers.equalTo("Deposit amount must be at least 0.01"));
+
+        //проверяем, что баланс не изменился
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
     }
 
     // negative: user cannot deposit to non-existent account
@@ -448,7 +678,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "pasha5",
+                          "username": "pasha51",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -464,7 +694,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "pasha5",
+                          "username": "pasha51",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -504,7 +734,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "user11",
+                          "username": "user28",
                           "password": "User1!#12",
                           "role": "USER"
                         }
@@ -520,7 +750,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "user11",
+                          "username": "user28",
                           "password": "User1!#12",
                           "role": "USER"
                         }
@@ -539,7 +769,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "user22",
+                          "username": "user222",
                           "password": "User2!#12",
                           "role": "USER"
                         }
@@ -555,7 +785,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "user22",
+                          "username": "user222",
                           "password": "User2!#12",
                           "role": "USER"
                         }
@@ -566,6 +796,19 @@ public class DepositTest {
                 .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .header("Authorization");
+
+        //создаём аккаунт первому пользователю
+        int accId = given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .post("http://localhost:4111/api/v1/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_CREATED)
+                .extract()
+                .jsonPath()
+                .getInt("id");
 
         //создаём аккаунт второму пользователю
         int accId1 = given()
@@ -596,6 +839,28 @@ public class DepositTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_FORBIDDEN)
                 .body(Matchers.equalTo("Unauthorized access to account"));
+
+        //проверяем, что баланс аккаунта 1 не изменился
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
+
+        //проверяем, что баланс аккаунта 2 не изменился
+        given()
+                .header("Authorization", userAuthHeader2)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId1 + " }.balance", Matchers.equalTo(0.0f));
     }
 
     //negative: unauthorized user cannot deposit
@@ -608,7 +873,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "pasha113",
+                          "username": "pasha1131",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -624,7 +889,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "pasha113",
+                          "username": "pasha1131",
                           "password": "Pasha1!#12",
                           "role": "USER"
                         }
@@ -663,6 +928,17 @@ public class DepositTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_UNAUTHORIZED);
+
+        //проверяем, что баланс не изменился
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
     }
 
     //negative: user with invalid auth cannot deposit
@@ -675,7 +951,7 @@ public class DepositTest {
                 .header("Authorization", "Basic YWRtaW46YWRtaW4=")
                 .body("""
                         {
-                          "username": "vasya6",
+                          "username": "vasya61",
                           "password": "Vasya!#12",
                           "role": "USER"
                         }
@@ -691,7 +967,7 @@ public class DepositTest {
                 .accept(ContentType.JSON)
                 .body("""
                         {
-                          "username": "vasya6",
+                          "username": "vasya61",
                           "password": "Vasya!#12",
                           "role": "USER"
                         }
@@ -731,5 +1007,15 @@ public class DepositTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_UNAUTHORIZED);
+
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
     }
 }
