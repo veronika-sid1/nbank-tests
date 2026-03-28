@@ -1,0 +1,449 @@
+# DEPOSIT TESTS
+### positive: user can deposit min 0.01
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 0.01
+}
+
+### positive: user can deposit 4999
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 4999
+}
+
+### positive: user can deposit max 5000
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 5000
+}
+
+### positive: user can deposit 4999.99
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 4999.99
+}
+
+### negative: user cannot deposit 5000.01
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 5000.01
+}
+
+### negative: user cannot deposit more than 5000
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 5001
+}
+
+### negative: user cannot deposit zero amount
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 0
+}
+
+### negative: user cannot deposit negative amount
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": -2
+}
+
+### negative: user cannot deposit to non-existent account
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 100,
+  "balance": 100
+}
+
+### negative: user cannot deposit to someone else's account
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 3,
+  "balance": 100
+}
+
+### negative: unauthorized user cannot deposit
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 100
+}
+
+### negative: user with invalid auth cannot deposit
+
+POST http://localhost:4111/api/v1/accounts/deposit
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ=1
+Content-Type: application/json
+
+{
+  "id": 3,
+  "balance": 100
+}
+
+#TRANSFER TESTS
+### positive: user can transfer money between his accounts
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 5,
+  "receiverAccountId": 4,
+  "amount": 1
+}
+
+### positive: user can transfer money to someone else's account + 9999 check
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 5,
+  "receiverAccountId": 6,
+  "amount": 9999
+}
+
+### positive: user can transfer max 10000
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": 10000
+}
+
+### positive: user can transfer min 0.01
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": 0.01
+}
+
+### positive: user can transfer 9999.99
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 9999.99
+}
+
+### negative: user cannot transfer 10000.01
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "id": 5,
+  "balance": 10000.01
+}
+
+
+### negative: user cannot transfer more than 10000
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": 10001
+}
+
+### negative: user cannot transfer negative amount
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": -100
+}
+
+### negative: user cannot transfer zero amount
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": 0
+}
+
+### negative: user cannot transfer amount exceeding balance
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": 200
+}
+
+### negative: user cannot transfer amount from someone else's account
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 6,
+  "receiverAccountId": 5,
+  "amount": 100
+}
+
+### negative: user cannot transfer to non-existing account
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 100,
+  "amount": 200
+}
+
+### negative: user cannot transfer from non-existing account
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "senderAccountId": 100,
+  "receiverAccountId": 5,
+  "amount": 200
+}
+
+### negative: unauthorized user cannot transfer
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": 200
+}
+
+### negative: user with invalid auth cannot transfer
+
+POST http://localhost:4111/api/v1/accounts/transfer
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ=1
+Content-Type: application/json
+
+{
+  "senderAccountId": 4,
+  "receiverAccountId": 5,
+  "amount": 200
+}
+
+
+# NAME TESTS
+### positive: user can specify name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": "Anna Ivanova"
+}
+
+### positive: user can edit name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": "Anna Petrova"
+}
+
+### negative: user cannot enter one word for name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": "Anna"
+}
+
+### negative: user cannot enter digits in name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": "Anna Petrova1"
+}
+
+### negative: user cannot enter empty name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": ""
+}
+
+### negative: user cannot enter two spaces in name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": "Anna  Ivanova"
+}
+
+### negative: user cannot enter three words in name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": "Anna Ivanova Pavlova"
+}
+
+### negative: user cannot enter special characters in name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+Content-Type: application/json
+
+{
+  "name": "Anna№*@$ Ivanova"
+}
+
+### negative: unauthorized user cannot specify name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Content-Type: application/json
+
+{
+  "name": "Anna Ivanova"
+}
+
+### negative: user with invalid auth cannot specify name
+
+PUT http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ=1
+Content-Type: application/json
+
+{
+  "name": "Anna Ivanova"
+}
+
+# PROFILE TESTS
+### positive: user can see money transactions
+
+GET http://localhost:4111/api/v1/accounts/4/transactions
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+
+### positive: user can see personal profile
+
+GET http://localhost:4111/api/v1/customer/profile
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+
+### positive: user can see his accounts
+
+GET http://localhost:4111/api/v1/customer/accounts
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+
+### negative: unauthorized user cannot see money transactions
+
+GET http://localhost:4111/api/v1/accounts/4/transactions
+
+### negative: user cannot see someone else's money transactions
+
+GET http://localhost:4111/api/v1/accounts/6/transactions
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+
+### negative: user cannot see non-existent money transactions
+
+GET http://localhost:4111/api/v1/accounts/100/transactions
+Authorization: Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ==
+
+### negative: unauthorized user cannot see personal profile
+
+GET http://localhost:4111/api/v1/customer/profile
+
+### negative: unauthorized user cannot see personal accounts
+
+GET http://localhost:4111/api/v1/customer/accounts
