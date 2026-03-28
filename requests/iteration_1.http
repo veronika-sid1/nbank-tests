@@ -4,8 +4,8 @@ POST http://localhost:4111/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "username": "kate19981",
-  "password": "kate19981"
+  "username": "admin",
+  "password": "admin"
 }
 
 ### Positive test: Admin can create new user with correct data
