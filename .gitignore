@@ -10,11 +10,6 @@ target/
 .idea/compiler.xml
 .idea/libraries/
 .idea/
-requests/iteration_2.http
-pom.xml
-src/test/java/iteration1/CreateAccountTest.java
-src/test/java/iteration1/CreateUserTest.java
-src/test/java/iteration1/LoginUserTest.java
 *.iws
 *.iml
 *.ipr
