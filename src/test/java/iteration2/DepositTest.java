@@ -1,1021 +1,346 @@
 package iteration2;
 
-import io.restassured.RestAssured;
-import io.restassured.filter.log.RequestLoggingFilter;
-import io.restassured.filter.log.ResponseLoggingFilter;
-import io.restassured.http.ContentType;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
+import generators.RandomData;
+import helpers.AccountHelpers;
+import models.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import requests.AdminCreateUserRequester;
+import requests.CreateAccountRequester;
+import requests.DepositRequester;
+import requests.GetUserAccountsRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import static io.restassured.RestAssured.given;
+import java.util.List;
+import java.util.stream.Stream;
 
-public class DepositTest {
-    @BeforeAll
-    public static void setupRestAssured() {
-        RestAssured.filters(
-                new RequestLoggingFilter(),
-                new ResponseLoggingFilter()
-        );
-    }
+public class DepositTest extends BaseTest {
 
     //positive: user can deposit min 0.01
-    @Test
-    public void userCanDepositMinimalAmount() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "kolya1238",
-                          "password": "Kolya1!#123",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
-
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "kolya1238",
-                          "password": "Kolya1!#123",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
-
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
-
-        //проверяем, что в ответе добавилось значение 0.01 с DEPOSIT
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 0.01
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("transactions.type", Matchers.hasItem("DEPOSIT"))
-                .body("transactions.amount", Matchers.hasItem(0.01f))
-                .body("balance", Matchers.equalTo(0.01f));
-
-        //проверяем баланс
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.01f));
-    }
-
-    // positive: user can deposit 4999
-    @Test
-    public void userCanDepositAmountBelowMaxLimit() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "p2asha11",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
-
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "p2asha11",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
-
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
-
-        //проверяем, что в ответе добавилось значение 4999 с DEPOSIT
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 4999
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("transactions.type", Matchers.hasItem("DEPOSIT"))
-                .body("transactions.amount", Matchers.hasItem(4999.0f))
-                .body("balance", Matchers.equalTo(4999.0f));
-
-        //проверяем баланс
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(4999.0f));
-    }
-
-    //positive: user can deposit max 5000
-    @Test
-    public void userCanDepositMaxLimit() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "pasha285",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
-
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "pasha285",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
-
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
-
-        //проверяем, что в ответе добавилось значение 5000 с DEPOSIT
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 5000
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("transactions.type", Matchers.hasItem("DEPOSIT"))
-                .body("transactions.amount", Matchers.hasItem(5000.0f))
-                .body("balance", Matchers.equalTo(5000.0f));
-
-        //проверяем баланс
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(5000.0f));
-    }
-
+    //positive: user can deposit 4999
     //positive: user can deposit 4999.99
-    @Test
-    public void userCanDepositAmountBelowMaxLimitFractional() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "dan1",
-                          "password": "Danya1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+    //positive: user can deposit max 5000
 
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "dan1",
-                          "password": "Danya1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+    @ParameterizedTest
+    @ValueSource(doubles = {0.01, 4999, 4999.99, 5000})
+    public void userCanDepositValidAmounts(double amount) {
+        CreateUserRequest userRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
+        new AdminCreateUserRequester(
+                RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest);
+
+        int accId = new CreateAccountRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post().extract().jsonPath().getInt("id");
+
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(accId)
+                .balance(amount)
+                .build();
+
+        DepositResponse depositResponse = new DepositRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(depositRequest).extract().as(DepositResponse.class);
+
+        softly.assertThat(depositResponse.getTransactions().getFirst().getAmount())
+                .isEqualTo(depositRequest.getBalance());
+        softly.assertThat(depositResponse.getTransactions().getFirst().getType())
+                .isEqualTo(TransactionType.DEPOSIT.name());
+        softly.assertThat(depositResponse.getBalance())
+                .isEqualTo(depositRequest.getBalance());
+
+        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .get()
                 .extract()
                 .jsonPath()
-                .getInt("id");
+                .getList("", GetUserAccountsResponse.class);
 
-        //проверяем, что в ответе добавилось значение 4999.99 с DEPOSIT
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 4999.99
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("transactions.type", Matchers.hasItem("DEPOSIT"))
-                .body("transactions.amount", Matchers.hasItem(4999.99f))
-                .body("balance", Matchers.equalTo(4999.99f));
+        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
 
-        //проверяем баланс
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(4999.99f));
+        softly.assertThat(account.getBalance())
+                .isEqualTo(depositRequest.getBalance());
     }
 
     //negative: user cannot deposit 5000.01
-    @Test
-    public void userCannotDepositAboveMaxLimitFractional() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "pasha113",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+    //negative: user cannot deposit 5001
+    //negative: user cannot deposit zero amount
+    //negative: user cannot deposit negative amount
 
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "pasha113",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
-
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
-
-        //проверяем, что в ответе вернулась ошибка
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 5000.01
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.equalTo("Deposit amount cannot exceed 5000"));
-
-        //проверяем, что баланс не изменился
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
+    private static Stream<Arguments> invalidDepositAmounts() {
+        return Stream.of(
+                Arguments.of(5000.01, "Deposit amount cannot exceed 5000"),
+                Arguments.of(5001, "Deposit amount cannot exceed 5000"),
+                Arguments.of(0, "Deposit amount must be at least 0.01"),
+                Arguments.of(-100, "Deposit amount must be at least 0.01")
+        );
     }
 
-    //negative: user cannot deposit more than 5000
-    @Test
-    public void userCannotDepositAboveMaxLimit() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "pasha213",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+    @ParameterizedTest
+    @MethodSource("invalidDepositAmounts")
+    public void userCannotDepositInvalidAmount(double amount, String expectedErrorMessage) {
+        double initialBalance = 0.0;
 
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "pasha213",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+        CreateUserRequest userRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
+        new AdminCreateUserRequester(
+                RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest);
+
+        int accId = new CreateAccountRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post().extract().jsonPath().getInt("id");
+
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(accId)
+                .balance(amount)
+                .build();
+
+        String actualErrorMessage = new DepositRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsBadRequest())
+                .post(depositRequest).extract().asString();
+
+        softly.assertThat(actualErrorMessage)
+                        .isEqualTo(expectedErrorMessage);
+
+        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .get()
                 .extract()
                 .jsonPath()
-                .getInt("id");
+                .getList("", GetUserAccountsResponse.class);
 
-        //проверяем, что в ответе вернулась ошибка
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 5001
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.equalTo("Deposit amount cannot exceed 5000"));
+        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
 
-        //проверяем, что баланс не изменился
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
-    }
-
-    // negative: user cannot deposit zero amount
-    @Test
-    public void userCannotDepositZeroAmount() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "pasha31",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
-
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "pasha31",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
-
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
-
-        //проверяем, что в ответе вернулась ошибка
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 0
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.equalTo("Deposit amount must be at least 0.01"));
-
-        //проверяем, что баланс не изменился
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
-    }
-
-    // negative: user cannot deposit negative amount
-    @Test
-    public void userCannotDepositNegativeAmount() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "pasha411",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
-
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "pasha411",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
-
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
-
-        //проверяем, что в ответе вернулась ошибка
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": -100
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.equalTo("Deposit amount must be at least 0.01"));
-
-        //проверяем, что баланс не изменился
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
+        softly.assertThat(account.getBalance())
+                .isEqualTo(initialBalance);
     }
 
     // negative: user cannot deposit to non-existent account
     @Test
     public void userCannotDepositToNonExistentAccount() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "pasha51",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+        int nonExistentAccountId = Integer.MAX_VALUE;
+        double depositAmount = 1.0;
+        String expectedErrorMessage = "Unauthorized access to account";
 
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "pasha51",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+        CreateUserRequest userRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        //проверяем, что в ответе вернулась ошибка
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": 1231313,
-                          "balance": 1
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_FORBIDDEN)
-                .body(Matchers.equalTo("Unauthorized access to account"));
+        new AdminCreateUserRequester(
+                RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest);
+
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(nonExistentAccountId)
+                .balance(depositAmount)
+                .build();
+
+        String actualErrorMessage = new DepositRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsForbidden())
+                .post(depositRequest).extract().asString();
+
+        softly.assertThat(actualErrorMessage)
+                .isEqualTo(expectedErrorMessage);
     }
 
     // negative: user cannot deposit to someone else's account
     @Test
     public void userCannotDepositToAnotherUsersAccount() {
-        // создание первого пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "user28",
-                          "password": "User1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+        double initialBalance = 0.0;
+        double depositAmount = 1.0;
+        String expectedErrorMessage = "Unauthorized access to account";
 
-        //получаем токен первого юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "user28",
-                          "password": "User1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+        // создаём пользователя 1
+        CreateUserRequest userRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        //создание второго пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "user222",
-                          "password": "User2!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+        new AdminCreateUserRequester(
+                RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest);
 
-        //получаем токен второго юзера
-        String userAuthHeader2 = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "user222",
-                          "password": "User2!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+        // создаём пользователя 2
+        CreateUserRequest userRequest2 = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        //создаём аккаунт первому пользователю
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
+        new AdminCreateUserRequester(
+                RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest2);
 
-        //создаём аккаунт второму пользователю
-        int accId1 = given()
-                .header("Authorization", userAuthHeader2)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .extract()
-                .jsonPath()
-                .getInt("id");
+        // создаём акк первому пользователю
+        int accId = new CreateAccountRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post().extract().jsonPath().getInt("id");
+
+        // создаём акк второму пользователю
+        int accId2 = new CreateAccountRequester(
+                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post().extract().jsonPath().getInt("id");
 
         //проверяем, что в ответе вернулась ошибка при попытке депозита на чужой акк
-        given()
-                .header("Authorization", userAuthHeader) //первый пользователь
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 100
-                        }
-                        """.formatted(accId1)) //id аккаунта второго пользака
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_FORBIDDEN)
-                .body(Matchers.equalTo("Unauthorized access to account"));
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(accId2)
+                .balance(depositAmount)
+                .build();
 
-        //проверяем, что баланс аккаунта 1 не изменился
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
+        String actualErrorMessage = new DepositRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsForbidden())
+                .post(depositRequest).extract().asString();
 
-        //проверяем, что баланс аккаунта 2 не изменился
-        given()
-                .header("Authorization", userAuthHeader2)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId1 + " }.balance", Matchers.equalTo(0.0f));
+        softly.assertThat(actualErrorMessage)
+                .isEqualTo(expectedErrorMessage);
+
+        //проверяем, что балансы аккаунтов 1 и 2 не изменились
+        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .get()
+                .extract()
+                .jsonPath()
+                .getList("", GetUserAccountsResponse.class);
+
+        List<GetUserAccountsResponse> userAccountsResponse2 = new GetUserAccountsRequester(
+                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .get()
+                .extract()
+                .jsonPath()
+                .getList("", GetUserAccountsResponse.class);
+
+        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
+        GetUserAccountsResponse account2 = AccountHelpers.getAccountById(userAccountsResponse2, accId2);
+
+        softly.assertThat(account.getBalance())
+                .isEqualTo(initialBalance);
+        softly.assertThat(account2.getBalance())
+                .isEqualTo(initialBalance);
     }
 
     //negative: unauthorized user cannot deposit
     @Test
     public void unauthorizedUserCannotDeposit() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "pasha1131",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+        double initialBalance = 0.0;
+        double depositAmount = 5.0;
 
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "pasha1131",
-                          "password": "Pasha1!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+        CreateUserRequest userRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
+        new AdminCreateUserRequester(
+                RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest);
+
+        int accId = new CreateAccountRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post().extract().jsonPath().getInt("id");
+
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(accId)
+                .balance(depositAmount)
+                .build();
+
+        new DepositRequester(
+                RequestSpecs.unauthSpec(),
+                ResponseSpecs.requestReturnsUnauthorized())
+                .post(depositRequest);
+
+        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .get()
                 .extract()
                 .jsonPath()
-                .getInt("id");
+                .getList("", GetUserAccountsResponse.class);
 
-        //проверяем, что вернулся статус код 401
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 5
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_UNAUTHORIZED);
+        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
 
-        //проверяем, что баланс не изменился
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
+        softly.assertThat(account.getBalance())
+                .isEqualTo(initialBalance);
     }
 
     //negative: user with invalid auth cannot deposit
     @Test
     public void userWithInvalidAuthCannotDeposit() {
-        // создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "vasya61",
-                          "password": "Vasya!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+        double initialBalance = 0.0;
+        double depositAmount = 5.0;
 
-        //получаем токен юзера
-        String userAuthHeader = given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "vasya61",
-                          "password": "Vasya!#12",
-                          "role": "USER"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract()
-                .header("Authorization");
+        CreateUserRequest userRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
 
-        //создаём аккаунт(счёт)
-        int accId = given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .post("http://localhost:4111/api/v1/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
+        new AdminCreateUserRequester(
+                RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest);
+
+        int accId = new CreateAccountRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post().extract().jsonPath().getInt("id");
+
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(accId)
+                .balance(depositAmount)
+                .build();
+
+        new DepositRequester(
+                RequestSpecs.brokenAuthUserSpec(),
+                ResponseSpecs.requestReturnsUnauthorized())
+                .post(depositRequest);
+
+        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .get()
                 .extract()
                 .jsonPath()
-                .getInt("id");
+                .getList("", GetUserAccountsResponse.class);
 
-        //проверяем, что возвращается ошибка 401
-        given()
-                .header("Authorization", "Basic YW5uYTE5OTY6UGFzc3dvcmQxIQ=1")
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "id": %d,
-                          "balance": 100
-                        }
-                        """.formatted(accId))
-                .post("http://localhost:4111/api/v1/accounts/deposit")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_UNAUTHORIZED);
+        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
 
-        given()
-                .header("Authorization", userAuthHeader)
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .body("find { it.id == " + accId + " }.balance", Matchers.equalTo(0.0f));
+        softly.assertThat(account.getBalance())
+                .isEqualTo(initialBalance);
     }
 }
