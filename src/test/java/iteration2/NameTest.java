@@ -22,7 +22,6 @@ public class NameTest extends BaseTest {
     @Test
     public void userCanSpecifyName() {
         String name = "Katya Smith";
-        String expectedMessage = "Profile updated successfully";
 
         CreateUserRequest userRequest = CreateUserRequest.builder()
                 .username(RandomData.getUsername())
@@ -47,7 +46,7 @@ public class NameTest extends BaseTest {
         softly.assertThat(updateProfileResponse.getCustomer().getName())
                 .isEqualTo(name);
         softly.assertThat(updateProfileResponse.getMessage())
-                .isEqualTo(expectedMessage);
+                .isEqualTo(ResponseSpecs.EXPECTED_MESSAGE);
 
         GetProfileResponse customer = new GetProfileRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),

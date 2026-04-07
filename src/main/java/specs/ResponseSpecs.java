@@ -3,8 +3,11 @@ package specs;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 public class ResponseSpecs {
+    public final static String EXPECTED_MESSAGE = "Profile updated successfully";
     private ResponseSpecs() {}
 
     private static ResponseSpecBuilder defaultResponseBuilder() {
