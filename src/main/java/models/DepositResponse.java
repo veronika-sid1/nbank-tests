@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class DepositResponse {
-    private int id;
+    private long id;
     private String accountNumber;
     private double balance;
     private List<Transactions> transactions;
@@ -22,10 +22,10 @@ public class DepositResponse {
     @NoArgsConstructor
     @Builder
     public static class Transactions {
-        private int id;
+        private long id;
         private double amount;
         private String type;
         private String timestamp;
-        private int relatedAccountId;
+        private long relatedAccountId;
     }
 }

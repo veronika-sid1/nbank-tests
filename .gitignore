@@ -10,6 +10,7 @@ target/
 .idea/compiler.xml
 .idea/libraries/
 .idea/
+NBank-UI/
 *.iws
 *.iml
 *.ipr

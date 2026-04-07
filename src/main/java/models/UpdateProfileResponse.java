@@ -20,7 +20,7 @@ public class UpdateProfileResponse {
     @NoArgsConstructor
     @Builder
     public static class Customer {
-        private int id;
+        private long id;
         private String username;
         private String password;
         private String name;
@@ -33,7 +33,7 @@ public class UpdateProfileResponse {
     @NoArgsConstructor
     @Builder
     public static class Account {
-        private int id;
+        private long id;
         private String accountNumber;
         private double balance;
         private List<Transaction> transactions;
@@ -44,10 +44,10 @@ public class UpdateProfileResponse {
     @NoArgsConstructor
     @Builder
     public static class Transaction {
-        private int id;
+        private long id;
         private double amount;
         private String type;
         private String timestamp;
-        private int relatedAccountId;
+        private long relatedAccountId;
     }
 }

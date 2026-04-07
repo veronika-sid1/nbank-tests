@@ -5,6 +5,7 @@ import io.restassured.specification.ResponseSpecification;
 import org.apache.http.HttpStatus;
 
 public class ResponseSpecs {
+    public static final String PROFILE_UPDATED = "Profile updated successfully";
     private ResponseSpecs() {}
 
     private static ResponseSpecBuilder defaultResponseBuilder() {
