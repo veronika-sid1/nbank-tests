@@ -1,14 +1,8 @@
 package iteration1.api;
 
-import generators.RandomData;
-import generators.RandomModelGenerator;
 import iteration2.api.BaseTest;
 import models.CreateUserRequest;
-import models.CreateUserResponse;
-import models.UserRole;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
 import requests.skeleton.Endpoint;
 import requests.skeleton.requesters.CrudRequester;
 import requests.steps.AdminSteps;

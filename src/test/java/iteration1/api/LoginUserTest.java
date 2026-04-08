@@ -1,15 +1,10 @@
 package iteration1.api;
 
-import generators.RandomData;
-import generators.RandomModelGenerator;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
 import models.LoginUserRequest;
-import models.UserRole;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.LoginUserRequester;
 import requests.skeleton.Endpoint;
 import requests.skeleton.requesters.CrudRequester;
 import requests.skeleton.requesters.ValidatedCrudRequester;

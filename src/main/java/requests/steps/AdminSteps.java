@@ -4,7 +4,6 @@ import generators.RandomModelGenerator;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
 import requests.skeleton.Endpoint;
-import requests.skeleton.requesters.CrudRequester;
 import requests.skeleton.requesters.ValidatedCrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;

@@ -7,7 +7,6 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import models.LoginUserRequest;
-import requests.LoginUserRequester;
 import requests.skeleton.Endpoint;
 import requests.skeleton.requesters.CrudRequester;
 
