@@ -1,226 +1,138 @@
 package iteration2.api;
 
+import entities.User;
 import generators.RandomData;
-import models.*;
+import models.ErrorResponse;
+import models.GetProfileResponse;
+import models.UpdateProfileRequest;
+import models.UpdateProfileResponse;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.AdminCreateUserRequester;
-import requests.GetProfileRequester;
-import requests.UpdateProfileRequester;
-import specs.RequestSpecs;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.ResponseSpecs;
-
-import static io.restassured.RestAssured.given;
 
 public class NameTest extends BaseTest {
 
-    // positive: user can specify name
+    @DisplayName("User can specify name")
     @Test
     public void userCanSpecifyName() {
-        String name = "Katya Smith";
-
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
         UpdateProfileRequest updateProfileRequest = UpdateProfileRequest.builder()
-                .name(name)
+                .name(RandomData.getName())
                 .build();
 
-        UpdateProfileResponse updateProfileResponse = new UpdateProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .put(updateProfileRequest).extract().as(UpdateProfileResponse.class);
+        UpdateProfileResponse updateProfileResponse = UserSteps.updateUserName(user.getRequest(), updateProfileRequest);
 
         softly.assertThat(updateProfileResponse.getCustomer().getName())
-                .isEqualTo(name);
+                .isEqualTo(updateProfileRequest.getName());
         softly.assertThat(updateProfileResponse.getMessage())
                 .isEqualTo(ResponseSpecs.PROFILE_UPDATED);
 
-        GetProfileResponse customer = new GetProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(GetProfileResponse.class);
+        GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
-        softly.assertThat(customer.getName())
-                        .isEqualTo(name);
+        softly.assertThat(getProfileResponse.getName())
+                        .isEqualTo(updateProfileRequest.getName());
     }
 
-    // positive: user can edit name
+    @DisplayName("User can edit name")
     @Test
     public void userCanEditName() {
-        String originalName = "Katya Smith";
-        String editedName = "Ekaterina Smith";
-
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
         UpdateProfileRequest updateProfileRequest = UpdateProfileRequest.builder()
-                .name(originalName)
+                .name(RandomData.getName())
                 .build();
 
-        new UpdateProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .put(updateProfileRequest);
+        UpdateProfileResponse updateProfileResponse = UserSteps.updateUserName(user.getRequest(), updateProfileRequest);
 
-        GetProfileResponse customer = new GetProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(GetProfileResponse.class);
+        softly.assertThat(updateProfileResponse.getCustomer().getName())
+                .isEqualTo(updateProfileRequest.getName());
+        softly.assertThat(updateProfileResponse.getMessage())
+                .isEqualTo(ResponseSpecs.PROFILE_UPDATED);
 
-        softly.assertThat(customer.getName())
-                .isEqualTo(originalName);
+        GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
+
+        softly.assertThat(getProfileResponse.getName())
+                .isEqualTo(updateProfileRequest.getName());
 
         UpdateProfileRequest editedProfileRequest = UpdateProfileRequest.builder()
-                .name(editedName)
+                .name(RandomData.getName())
                 .build();
 
-        new UpdateProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .put(editedProfileRequest);
+        UpdateProfileResponse updateProfileResponseSecond = UserSteps.updateUserName(user.getRequest(), editedProfileRequest);
 
-        GetProfileResponse customerUpdated = new GetProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(GetProfileResponse.class);
+        softly.assertThat(updateProfileResponseSecond.getCustomer().getName())
+                .isEqualTo(editedProfileRequest.getName());
+        softly.assertThat(updateProfileResponseSecond.getMessage())
+                .isEqualTo(ResponseSpecs.PROFILE_UPDATED);
 
-        softly.assertThat(customerUpdated.getName())
-                .isEqualTo(editedName);
+        GetProfileResponse getProfileResponseSecond = UserSteps.getProfile(user.getRequest());
+
+        softly.assertThat(getProfileResponseSecond.getName())
+                .isEqualTo(editedProfileRequest.getName());
     }
 
-    //negative: user cannot enter one word for name
-    //negative: user cannot enter digits in name
-    //negative: user cannot enter empty name
-    //negative: user cannot enter two spaces in name
-    //negative: user cannot enter three words in name
-    //negative: user cannot enter special characters in name
-    @ParameterizedTest
+    @DisplayName("User cannot enter invalid name")
+    @ParameterizedTest(name = "User cannot enter invalid name: {0}")
     @ValueSource(strings = {"Katya", "Anna Petrova1", "", "Anna  Pavlova", "Anna Pavlova Ivanova", "Annas!#123"})
     public void userCannotSpecifyInvalidNames(String name) {
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
         UpdateProfileRequest updateProfileRequest = UpdateProfileRequest.builder()
                 .name(name)
                 .build();
 
-        new UpdateProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsBadRequest())
-                .put(updateProfileRequest);
+        ErrorResponse errorResponse = UserSteps.attemptUpdateUsernameUsingInvalidData(user.getRequest(), updateProfileRequest);
 
-        GetProfileResponse customer = new GetProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(GetProfileResponse.class);
+        softly.assertThat(errorResponse.getMessage())
+                .isEqualTo(ResponseSpecs.NAME_VALIDATION);
 
-        softly.assertThat(customer.getName())
+        GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
+
+        softly.assertThat(getProfileResponse.getName())
                 .isNull();
     }
 
-    // negative: unauthorized user cannot specify name
+    @DisplayName("Unauthorized user cannot specify name")
     @Test
     public void unauthorizedUserCannotSpecifyName() {
-        String name = "Katya Smith";
-
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
         UpdateProfileRequest updateProfileRequest = UpdateProfileRequest.builder()
-                .name(name)
+                .name(RandomData.getName())
                 .build();
 
-        new UpdateProfileRequester(
-                RequestSpecs.unauthSpec(),
-                ResponseSpecs.requestReturnsUnauthorized())
-                .put(updateProfileRequest);
+        UserSteps.updateUserNameUnauthorized(updateProfileRequest);
 
-        GetProfileResponse customer = new GetProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(GetProfileResponse.class);
+        GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
-        softly.assertThat(customer.getName())
+        softly.assertThat(getProfileResponse.getName())
                 .isNull();
     }
 
-    //negative: user with invalid auth cannot specify name
+    @DisplayName("User with invalid auth cannot specify name")
     @Test
     public void invalidAuthUserCannotSpecifyName() {
-        String name = "Katya Smith";
-
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
         UpdateProfileRequest updateProfileRequest = UpdateProfileRequest.builder()
-                .name(name)
+                .name(RandomData.getName())
                 .build();
 
-        new UpdateProfileRequester(
-                RequestSpecs.brokenAuthUserSpec(),
-                ResponseSpecs.requestReturnsUnauthorized())
-                .put(updateProfileRequest);
+        UserSteps.updateUserNameWithBrokenAuth(updateProfileRequest);
 
-        GetProfileResponse customer = new GetProfileRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(GetProfileResponse.class);
+        GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
-        softly.assertThat(customer.getName())
+        softly.assertThat(getProfileResponse.getName())
                 .isNull();
     }
 }

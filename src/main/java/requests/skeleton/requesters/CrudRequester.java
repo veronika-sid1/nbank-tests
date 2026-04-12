@@ -16,6 +16,16 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface 
     }
 
     @Override
+    public ValidatableResponse post() {
+        return given()
+                .spec(requestSpecification)
+                .post(endpoint.getUrl())
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
+    @Override
     public ValidatableResponse post(BaseModel model) {
         var body = model == null ? "" : model;
         return given()
@@ -25,20 +35,49 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface 
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
-    };
-
-    @Override
-    public Object get(long id) {
-        return null;
     }
 
     @Override
-    public Object update(long id, BaseModel model) {
-        return null;
+    public ValidatableResponse get() {
+        return given()
+                .spec(requestSpecification)
+                .get(endpoint.getUrl())
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
     }
 
     @Override
-    public Object delete(long id) {
-        return null;
+    public ValidatableResponse get(long id) {
+        return given()
+                .spec(requestSpecification)
+                .pathParam("id", id)
+                .get(endpoint.getUrl())
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
+    @Override
+    public ValidatableResponse update(BaseModel model) {
+        var body = model == null ? "" : model;
+        return given()
+                .spec(requestSpecification)
+                .body(body)
+                .put(endpoint.getUrl())
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
+    }
+
+    @Override
+    public ValidatableResponse delete(long id) {
+        return given()
+                .spec(requestSpecification)
+                .pathParam("id", id)
+                .delete(endpoint.getUrl())
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
     }
 }

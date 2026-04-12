@@ -1,17 +1,14 @@
 package iteration1.api;
 
-import generators.RandomData;
 import generators.RandomModelGenerator;
 import iteration2.api.BaseTest;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
-import models.UserRole;
 import models.comparison.ModelAssertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.AdminCreateUserRequester;
 import requests.skeleton.Endpoint;
 import requests.skeleton.requesters.CrudRequester;
 import requests.skeleton.requesters.ValidatedCrudRequester;

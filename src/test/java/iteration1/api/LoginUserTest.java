@@ -1,6 +1,6 @@
 package iteration1.api;
 
-import models.CreateUserRequest;
+import entities.User;
 import models.CreateUserResponse;
 import models.LoginUserRequest;
 import org.hamcrest.Matchers;
@@ -29,12 +29,15 @@ public class LoginUserTest extends BaseTest {
 
     @Test
     public void userCanGenerateAuthTokenTest() {
-        CreateUserRequest userRequest = AdminSteps.createUser();
+        User userRequest = AdminSteps.createUser();
 
         new CrudRequester(RequestSpecs.unauthSpec(),
                 Endpoint.LOGIN,
                 ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder().username(userRequest.getUsername()).password(userRequest.getPassword()).build())
+                .post(LoginUserRequest.builder()
+                        .username(userRequest.getRequest().getUsername())
+                        .password(userRequest.getRequest().getPassword())
+                        .build())
                 .header("Authorization", Matchers.notNullValue());
     }
 }

@@ -1,346 +1,203 @@
 package iteration2.api;
 
+import entities.User;
 import generators.RandomData;
-import helpers.AccountHelpers;
 import models.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.DepositRequester;
-import requests.GetUserAccountsRequester;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 public class DepositTest extends BaseTest {
-
-    //positive: user can deposit min 0.01
-    //positive: user can deposit 4999
-    //positive: user can deposit 4999.99
-    //positive: user can deposit max 5000
-
-    @ParameterizedTest
+    @DisplayName("User can deposit valid amount")
+    @ParameterizedTest(name = "User can deposit valid amount: {0}")
     @ValueSource(doubles = {0.01, 4999, 4999.99, 5000})
     public void userCanDepositValidAmounts(double amount) {
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        long accId = UserSteps.createAccount(user.getRequest()).getId();
+        accountsToDelete.put(accId, user.getRequest());
 
-        int accId = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post().extract().jsonPath().getInt("id");
+        GetUserAccountsResponse beforeDeposit = UserSteps.getAccountById(user.getRequest(), accId);
+
+        softly.assertThat(beforeDeposit.getBalance())
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .id(accId)
                 .balance(amount)
                 .build();
 
-        DepositResponse depositResponse = new DepositRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .post(depositRequest).extract().as(DepositResponse.class);
+        DepositResponse depositResponse = UserSteps.makeDeposit(user.getRequest(), depositRequest);
 
-        softly.assertThat(depositResponse.getTransactions().getFirst().getAmount())
-                .isEqualTo(depositRequest.getBalance());
         softly.assertThat(depositResponse.getTransactions().getFirst().getType())
                 .isEqualTo(TransactionType.DEPOSIT.name());
-        softly.assertThat(depositResponse.getBalance())
-                .isEqualTo(depositRequest.getBalance());
 
-        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .jsonPath()
-                .getList("", GetUserAccountsResponse.class);
-
-        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
+        GetUserAccountsResponse account = UserSteps.getAccountById(user.getRequest(), accId);
 
         softly.assertThat(account.getBalance())
                 .isEqualTo(depositRequest.getBalance());
     }
-
-    //negative: user cannot deposit 5000.01
-    //negative: user cannot deposit 5001
-    //negative: user cannot deposit zero amount
-    //negative: user cannot deposit negative amount
 
     private static Stream<Arguments> invalidDepositAmounts() {
         return Stream.of(
-                Arguments.of(5000.01, "Deposit amount cannot exceed 5000"),
-                Arguments.of(5001, "Deposit amount cannot exceed 5000"),
-                Arguments.of(0, "Deposit amount must be at least 0.01"),
-                Arguments.of(-100, "Deposit amount must be at least 0.01")
+                Arguments.of(5000.01, ResponseSpecs.DEPOSIT_TOO_LARGE),
+                Arguments.of(5001, ResponseSpecs.DEPOSIT_TOO_LARGE),
+                Arguments.of(0, ResponseSpecs.DEPOSIT_TOO_SMALL),
+                Arguments.of(-100, ResponseSpecs.DEPOSIT_TOO_SMALL)
         );
     }
 
-    @ParameterizedTest
+    @DisplayName("User cannot deposit invalid amount: {0}")
+    @ParameterizedTest(name = "User cannot deposit invalid amount: {0}")
     @MethodSource("invalidDepositAmounts")
     public void userCannotDepositInvalidAmount(double amount, String expectedErrorMessage) {
-        double initialBalance = 0.0;
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        long accId = UserSteps.createAccount(user.getRequest()).getId();
+        accountsToDelete.put(accId, user.getRequest());
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        GetUserAccountsResponse beforeDeposit = UserSteps.getAccountById(user.getRequest(), accId);
 
-        int accId = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post().extract().jsonPath().getInt("id");
+        softly.assertThat(beforeDeposit.getBalance())
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .id(accId)
                 .balance(amount)
                 .build();
 
-        String actualErrorMessage = new DepositRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsBadRequest())
-                .post(depositRequest).extract().asString();
+        ErrorResponse errorResponse = UserSteps.attemptDepositAndGetBadRequest(user.getRequest(), depositRequest);
 
-        softly.assertThat(actualErrorMessage)
-                        .isEqualTo(expectedErrorMessage);
+        softly.assertThat(errorResponse.getMessage())
+                .isEqualTo(expectedErrorMessage);
 
-        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .jsonPath()
-                .getList("", GetUserAccountsResponse.class);
-
-        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
+        GetUserAccountsResponse account = UserSteps.getAccountById(user.getRequest(), accId);
 
         softly.assertThat(account.getBalance())
-                .isEqualTo(initialBalance);
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
-    // negative: user cannot deposit to non-existent account
+    @DisplayName("User cannot deposit to non-existent account")
     @Test
     public void userCannotDepositToNonExistentAccount() {
-        int nonExistentAccountId = Integer.MAX_VALUE;
-        double depositAmount = 1.0;
-        String expectedErrorMessage = "Unauthorized access to account";
-
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(nonExistentAccountId)
-                .balance(depositAmount)
+                .id(RequestSpecs.NON_EXISTENT_ACCOUNT_ID)
+                .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
-        String actualErrorMessage = new DepositRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsForbidden())
-                .post(depositRequest).extract().asString();
+        ErrorResponse errorResponse = UserSteps.attemptDepositAndGetForbidden(user.getRequest(), depositRequest);
 
-        softly.assertThat(actualErrorMessage)
-                .isEqualTo(expectedErrorMessage);
+        softly.assertThat(errorResponse.getMessage())
+                .isEqualTo(ResponseSpecs.FORBIDDEN);
     }
 
-    // negative: user cannot deposit to someone else's account
+    @DisplayName("User cannot deposit to someone else's account")
     @Test
     public void userCannotDepositToAnotherUsersAccount() {
-        double initialBalance = 0.0;
-        double depositAmount = 1.0;
-        String expectedErrorMessage = "Unauthorized access to account";
+        User user = AdminSteps.createUser();
+        User secondUser = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
+        usersToDelete.add(secondUser.getResponse().getId());
 
-        // создаём пользователя 1
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        long accId = UserSteps.createAccount(user.getRequest()).getId();
+        long secondUserAccId = UserSteps.createAccount(secondUser.getRequest()).getId();
+        accountsToDelete.put(accId, user.getRequest());
+        accountsToDelete.put(secondUserAccId, secondUser.getRequest());
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        GetUserAccountsResponse beforeDeposit = UserSteps.getAccountById(user.getRequest(), accId);
 
-        // создаём пользователя 2
-        CreateUserRequest userRequest2 = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        softly.assertThat(beforeDeposit.getBalance())
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest2);
+        GetUserAccountsResponse beforeDepositSecondUser = UserSteps.getAccountById(secondUser.getRequest(), secondUserAccId);
 
-        // создаём акк первому пользователю
-        int accId = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post().extract().jsonPath().getInt("id");
+        softly.assertThat(beforeDepositSecondUser.getBalance())
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
-        // создаём акк второму пользователю
-        int accId2 = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post().extract().jsonPath().getInt("id");
-
-        //проверяем, что в ответе вернулась ошибка при попытке депозита на чужой акк
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId2)
-                .balance(depositAmount)
+                .id(secondUserAccId)
+                .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
-        String actualErrorMessage = new DepositRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsForbidden())
-                .post(depositRequest).extract().asString();
+        ErrorResponse errorResponse = UserSteps.attemptDepositAndGetForbidden(user.getRequest(), depositRequest);
 
-        softly.assertThat(actualErrorMessage)
-                .isEqualTo(expectedErrorMessage);
+        softly.assertThat(errorResponse.getMessage())
+                .isEqualTo(ResponseSpecs.FORBIDDEN);
 
-        //проверяем, что балансы аккаунтов 1 и 2 не изменились
-        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .jsonPath()
-                .getList("", GetUserAccountsResponse.class);
-
-        List<GetUserAccountsResponse> userAccountsResponse2 = new GetUserAccountsRequester(
-                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .jsonPath()
-                .getList("", GetUserAccountsResponse.class);
-
-        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
-        GetUserAccountsResponse account2 = AccountHelpers.getAccountById(userAccountsResponse2, accId2);
+        GetUserAccountsResponse account = UserSteps.getAccountById(user.getRequest(), accId);
+        GetUserAccountsResponse secondUserAccount = UserSteps.getAccountById(secondUser.getRequest(), secondUserAccId);
 
         softly.assertThat(account.getBalance())
-                .isEqualTo(initialBalance);
-        softly.assertThat(account2.getBalance())
-                .isEqualTo(initialBalance);
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
+        softly.assertThat(secondUserAccount.getBalance())
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
-    //negative: unauthorized user cannot deposit
+    @DisplayName("Unauthorized user cannot deposit")
     @Test
     public void unauthorizedUserCannotDeposit() {
-        double initialBalance = 0.0;
-        double depositAmount = 5.0;
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        long accId = UserSteps.createAccount(user.getRequest()).getId();
+        accountsToDelete.put(accId, user.getRequest());
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        GetUserAccountsResponse beforeDeposit = UserSteps.getAccountById(user.getRequest(), accId);
 
-        int accId = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post().extract().jsonPath().getInt("id");
+        softly.assertThat(beforeDeposit.getBalance())
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .id(accId)
-                .balance(depositAmount)
+                .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
-        new DepositRequester(
-                RequestSpecs.unauthSpec(),
-                ResponseSpecs.requestReturnsUnauthorized())
-                .post(depositRequest);
+        UserSteps.attemptDepositUnauthorized(depositRequest);
 
-        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .jsonPath()
-                .getList("", GetUserAccountsResponse.class);
-
-        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
+        GetUserAccountsResponse account = UserSteps.getAccountById(user.getRequest(), accId);
 
         softly.assertThat(account.getBalance())
-                .isEqualTo(initialBalance);
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
-    //negative: user with invalid auth cannot deposit
+    @DisplayName("User with invalid auth cannot deposit")
     @Test
     public void userWithInvalidAuthCannotDeposit() {
-        double initialBalance = 0.0;
-        double depositAmount = 5.0;
+        User user = AdminSteps.createUser();
+        usersToDelete.add(user.getResponse().getId());
 
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        long accId = UserSteps.createAccount(user.getRequest()).getId();
+        accountsToDelete.put(accId, user.getRequest());
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        GetUserAccountsResponse beforeDeposit = UserSteps.getAccountById(user.getRequest(), accId);
 
-        int accId = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post().extract().jsonPath().getInt("id");
+        softly.assertThat(beforeDeposit.getBalance())
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
                 .id(accId)
-                .balance(depositAmount)
+                .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
-        new DepositRequester(
-                RequestSpecs.brokenAuthUserSpec(),
-                ResponseSpecs.requestReturnsUnauthorized())
-                .post(depositRequest);
+        UserSteps.attemptDepositWithBrokenAuth(depositRequest);
 
-        List<GetUserAccountsResponse> userAccountsResponse = new GetUserAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .jsonPath()
-                .getList("", GetUserAccountsResponse.class);
-
-        GetUserAccountsResponse account = AccountHelpers.getAccountById(userAccountsResponse, accId);
+        GetUserAccountsResponse account = UserSteps.getAccountById(user.getRequest(), accId);
 
         softly.assertThat(account.getBalance())
-                .isEqualTo(initialBalance);
+                .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 }

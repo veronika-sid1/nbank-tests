@@ -1,6 +1,7 @@
 package specs;
 
 import configs.Config;
+import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -13,9 +14,14 @@ import requests.skeleton.requesters.CrudRequester;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class RequestSpecs {
-    private static Map<String, String> authHeaders = new HashMap<>(Map.of("admin", "Basic YWRtaW46YWRtaW4="));
+    public static final long NON_EXISTENT_ACCOUNT_ID = Long.MAX_VALUE;
+    public static final double INITIAL_BALANCE = 0.0;
+    public static final double MAX_DEPOSIT = 5000.0;
+
+    private static final Map<String, String> authHeaders = new HashMap<>(Map.of("admin", "Basic YWRtaW46YWRtaW4="));
 
     private RequestSpecs(){}
 
@@ -41,7 +47,10 @@ public class RequestSpecs {
 
     public static RequestSpecification adminSpec() {
         return defaultRequestBuilder()
-                .addHeader("Authorization", authHeaders.get("admin"))
+                .setAuth(RestAssured.preemptive().basic(
+                        Config.getProperty("admin.login"),
+                        Config.getProperty("admin.password")
+                ))
                 .build();
     }
 

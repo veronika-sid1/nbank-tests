@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UpdateProfileResponse {
+public class UpdateProfileResponse extends BaseModel {
     private Customer customer;
     private String message;
 
