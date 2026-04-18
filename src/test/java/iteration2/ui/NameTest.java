@@ -1,98 +1,45 @@
 package iteration2.ui;
 
-import com.codeborne.selenide.*;
-import entities.User;
-import generators.RandomData;
-import models.GetProfileResponse;
-import models.LoginUserRequest;
-import models.UpdateProfileRequest;
-import models.UpdateProfileResponse;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import api.entities.User;
+import api.generators.RandomData;
+import api.generators.RandomModelGenerator;
+import api.models.GetProfileResponse;
+import api.models.UpdateProfileRequest;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
+import api.specs.ResponseSpecs;
+import base.BaseUITest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.Keys;
-import requests.skeleton.Endpoint;
-import requests.skeleton.requesters.CrudRequester;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import ui.pages.BankAlert;
+import ui.pages.UpdateNamePage;
+import ui.pages.UserDashboard;
 
-import java.util.Map;
-
-import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Selenide.refresh;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class NameTest {
-    @BeforeAll
-    public static void setupSelenoid() {
-        Configuration.remote = "http://localhost:4444/wd/hub";
-        Configuration.baseUrl = "http://192.168.0.168:3000";
-        Configuration.browser = "chrome";
-        Configuration.browserSize = "1920x1080";
-
-        Configuration.browserCapabilities.setCapability("selenoid:options",
-                Map.of("enableVNC", true, "enableLog", true)
-        );
-    }
-
+public class NameTest extends BaseUITest {
     @DisplayName("User can specify his name")
     @Test
     public void userCanSpecifyName() {
-        String name = "Katya Ivanova";
+        String name = RandomData.getName();
 
         User user = AdminSteps.createUser();
 
-        Selenide.open("/");
+        authAsUser(user.getRequest());
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder()
-                        .username(user.getRequest().getUsername())
-                        .password(user.getRequest().getPassword()).build())
-                .extract()
-                .header("Authorization");
+        UpdateNamePage updateNamePage = new UpdateNamePage();
+        UserDashboard userDashboard = new UserDashboard();
 
-        $("body").shouldBe(visible);
+        userDashboard.open().enterProfilePage();
 
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
-
-        $(Selectors.byClassName("user-name")).click();
-
-        SelenideElement input = $(Selectors.byAttribute("placeholder", "Enter new name"))
-                .shouldBe(visible, enabled);
-
-        input.shouldBe(empty);
-        input.click();
-        input.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-        input.sendKeys(Keys.DELETE);
-        input.sendKeys(name);
-        input.shouldHave(value(name));
-
-        $(Selectors.byText("\uD83D\uDCBE Save Changes")).click();
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        assertThat(alertText).contains("✅ Name updated successfully!");
-
-        alert.accept();
+        updateNamePage.fillName(name).saveChanges()
+                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage());
 
         refresh();
 
-        $(Selectors.byClassName("user-name"))
-                .shouldHave(text(name));
-
-        $(Selectors.byText("\uD83C\uDFE0 Home")).click();
-
-        $(Selectors.byClassName("welcome-text")).shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, " + name));
+        updateNamePage.checkName(name).returnToMainPage();
+        userDashboard.checkUsernameOnDashboardPage(name);
 
         GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
@@ -103,128 +50,51 @@ public class NameTest {
     @DisplayName("User can edit name")
     @Test
     public void userCanEditName() {
-        String name = "Katya Ivanova";
-        String editedName = "Katya Fedorova";
+        UpdateProfileRequest nameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
+        UpdateProfileRequest editedNameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
 
         User user = AdminSteps.createUser();
 
-        UpdateProfileRequest updateProfileRequest = UpdateProfileRequest.builder()
-                .name(name)
-                .build();
+        UserSteps.updateUserName(user.getRequest(), nameReq);
 
-        UserSteps.updateUserName(user.getRequest(), updateProfileRequest);
+        authAsUser(user.getRequest());
 
-        Selenide.open("/");
+        UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder()
-                        .username(user.getRequest().getUsername())
-                        .password(user.getRequest().getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        $("body").shouldBe(visible);
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
-
-        $(Selectors.byClassName("user-name")).click();
-
-        SelenideElement input = $(Selectors.byAttribute("placeholder", "Enter new name"))
-                .shouldBe(visible, enabled);
-
-        input.shouldHave(value(name));
-        input.click();
-        input.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-        input.sendKeys(Keys.DELETE);
-        input.sendKeys(editedName);
-        input.shouldHave(value(editedName));
-
-        $(Selectors.byText("\uD83D\uDCBE Save Changes")).click();
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        assertThat(alertText).contains("✅ Name updated successfully!");
-
-        alert.accept();
+        updateNamePage.open().fillName(editedNameReq.getName()).saveChanges()
+                        .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage());
 
         refresh();
 
-        $(Selectors.byClassName("user-name"))
-                .shouldHave(text(editedName));
+        updateNamePage.checkName(editedNameReq.getName()).returnToMainPage();
 
-        $(Selectors.byText("\uD83C\uDFE0 Home")).click();
-
-        $(Selectors.byClassName("welcome-text")).shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, " + editedName));
+        new UserDashboard().checkUsernameOnDashboardPage(editedNameReq.getName());
 
         GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
         assertThat(getProfileResponse.getName())
-                .isEqualTo(editedName);
+                .isEqualTo(editedNameReq.getName());
     }
 
     @DisplayName("User cannot specify invalid name")
     @Test
     public void userCannotSpecifyInvalidName() {
-        String name = "AnnaPavlova123";
-        String noname = "Noname";
+        String invalidName = "AnnaPavlova123";
 
         User user = AdminSteps.createUser();
 
-        Selenide.open("/");
+        authAsUser(user.getRequest());
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder()
-                        .username(user.getRequest().getUsername())
-                        .password(user.getRequest().getPassword()).build())
-                .extract()
-                .header("Authorization");
+        UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        $("body").shouldBe(visible);
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
-
-        $(Selectors.byClassName("user-name")).click();
-
-        SelenideElement input = $(Selectors.byAttribute("placeholder", "Enter new name"))
-                .shouldBe(visible, enabled);
-
-        input.shouldBe(empty);
-        input.click();
-        input.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-        input.sendKeys(Keys.DELETE);
-        input.sendKeys(name);
-        input.shouldHave(value(name));
-
-        input.shouldHave(value(name));
-
-        $(Selectors.byText("\uD83D\uDCBE Save Changes")).click();
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        assertThat(alertText).contains("Name must contain two words with letters only");
-
-        alert.accept();
+        updateNamePage.open().fillName(invalidName).saveChanges()
+                .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS.getMessage());
 
         refresh();
 
-        $(Selectors.byClassName("user-name"))
-                .shouldHave(text(noname));
+        updateNamePage.checkName(ResponseSpecs.NONAME).returnToMainPage();
 
-        $(Selectors.byText("\uD83C\uDFE0 Home")).click();
-
-        $(Selectors.byClassName("welcome-text")).shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
+        new UserDashboard().checkUsernameOnDashboardPage(ResponseSpecs.NONAME);
 
         GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
@@ -237,109 +107,49 @@ public class NameTest {
     public void userCannotSaveEmptyName() {
         User user = AdminSteps.createUser();
 
-        Selenide.open("/");
+        authAsUser(user.getRequest());
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder()
-                        .username(user.getRequest().getUsername())
-                        .password(user.getRequest().getPassword()).build())
-                .extract()
-                .header("Authorization");
+        UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        $("body").shouldBe(visible);
+        updateNamePage.open().saveChanges()
+                .checkAlertMessageAndAccept(BankAlert.ENTER_VALID_NAME.getMessage());
 
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        refresh();
 
-        Selenide.open("/dashboard");
+        updateNamePage.checkName(ResponseSpecs.NONAME).returnToMainPage();
 
-        $(Selectors.byClassName("user-name")).click();
+        new UserDashboard().checkUsernameOnDashboardPage(ResponseSpecs.NONAME);
 
-        SelenideElement input = $(Selectors.byAttribute("placeholder", "Enter new name"))
-                .shouldBe(visible, enabled);
+        GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
-        input.shouldBe(empty);
-        input.click();
-        input.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-        input.sendKeys(Keys.DELETE);
-
-        $(Selectors.byText("\uD83D\uDCBE Save Changes")).click();
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        assertThat(alertText).contains("❌ Please enter a valid name.");
-
-        alert.accept();
-        assertThat(user.getResponse().getName())
+        assertThat(getProfileResponse.getName())
                 .isNull();
     }
 
     @DisplayName("User cannot save already saved name")
     @Test
     public void userCannotSaveAlreadySavedName() {
-        String name = "Katya Ivanova";
+        UpdateProfileRequest nameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
+
         User user = AdminSteps.createUser();
 
-        UpdateProfileRequest updateProfileRequest = UpdateProfileRequest.builder()
-                .name(name)
-                .build();
+        UserSteps.updateUserName(user.getRequest(), nameReq);
 
-        UserSteps.updateUserName(user.getRequest(), updateProfileRequest);
+        authAsUser(user.getRequest());
 
-        Selenide.open("/");
+        UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder()
-                        .username(user.getRequest().getUsername())
-                        .password(user.getRequest().getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        $("body").shouldBe(visible);
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
-
-        $(Selectors.byClassName("user-name")).click();
-
-        SelenideElement input = $(Selectors.byAttribute("placeholder", "Enter new name"))
-                .shouldBe(visible, enabled);
-
-        input.shouldHave(value(name));
-        input.click();
-        input.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-        input.sendKeys(Keys.DELETE);
-        input.sendKeys(name);
-        input.shouldHave(value(name));
-
-        $(Selectors.byText("\uD83D\uDCBE Save Changes")).click();
-
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        assertThat(alertText).contains("New name is the same as the current one.");
-
-        alert.accept();
+        updateNamePage.open().fillName(nameReq.getName()).saveChanges()
+                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_SAME_AS_CURRENT.getMessage());
 
         refresh();
 
-        $(Selectors.byClassName("user-name"))
-                .shouldHave(text(name));
+        updateNamePage.checkName(nameReq.getName()).returnToMainPage();
 
-        $(Selectors.byText("\uD83C\uDFE0 Home")).click();
-
-        $(Selectors.byClassName("welcome-text")).shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, " + name));
-
+        new UserDashboard().checkUsernameOnDashboardPage(nameReq.getName());
         GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
         assertThat(getProfileResponse.getName())
-                .isEqualTo(name);
+                .isEqualTo(nameReq.getName());
     }
 }

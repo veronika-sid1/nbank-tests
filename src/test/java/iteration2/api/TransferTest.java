@@ -1,20 +1,20 @@
 package iteration2.api;
 
-import entities.User;
-import generators.RandomData;
-import helpers.TestHelpers;
-import models.*;
-import models.comparison.ModelAssertions;
+import api.entities.User;
+import api.generators.RandomData;
+import api.helpers.TestHelpers;
+import api.models.*;
+import api.models.comparison.ModelAssertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 
 import java.util.stream.Stream;
 
