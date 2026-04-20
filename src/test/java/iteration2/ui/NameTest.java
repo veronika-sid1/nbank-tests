@@ -79,7 +79,7 @@ public class NameTest extends BaseUITest {
     @DisplayName("User cannot specify invalid name")
     @Test
     public void userCannotSpecifyInvalidName() {
-        String invalidName = "AnnaPavlova123";
+        String invalidName = RandomData.getRandomInvalidName();
 
         User user = AdminSteps.createUser();
 
