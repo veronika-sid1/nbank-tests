@@ -56,4 +56,12 @@ public class RandomData {
 
         return Math.round(value * 100.0) / 100.0;
     }
+
+    public static String getRandomInvalidName() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            sb.append((char) ('a' + ThreadLocalRandom.current().nextInt(26)));
+        }
+        return sb.toString();
+    }
 }

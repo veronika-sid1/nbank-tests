@@ -1,4 +1,4 @@
-package iteration2.api;
+package base;
 
 import api.models.CreateUserRequest;
 import org.assertj.core.api.SoftAssertions;
@@ -51,5 +51,13 @@ public class BaseTest {
 
         accountsToDelete.clear();
         usersToDelete.clear();
+    }
+
+    protected void addUserForDeletion(Long userId) {
+        usersToDelete.add(userId);
+    }
+
+    protected void addAccountForDeletion(Long accountId, CreateUserRequest userRequest) {
+        accountsToDelete.put(accountId, userRequest);
     }
 }

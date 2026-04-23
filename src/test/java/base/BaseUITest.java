@@ -1,17 +1,29 @@
 package base;
 
 import api.configs.Config;
-import api.models.CreateUserRequest;
-import api.specs.RequestSpecs;
+import api.entities.User;
+import api.models.CreateAccountResponse;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selenide;
-import iteration1.api.BaseTest;
+import common.extensions.AdminSessionExtension;
+import common.extensions.BrowserMatchExtension;
+import common.extensions.UserAccountExtension;
+import common.extensions.UserSessionExtension;
+import common.storage.SessionStorage;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
 import java.util.Map;
 
-import static com.codeborne.selenide.Selenide.executeJavaScript;
+import static com.codeborne.selenide.Selenide.closeWebDriver;
 
+@ExtendWith(AdminSessionExtension.class)
+@ExtendWith(UserSessionExtension.class)
+@ExtendWith(UserAccountExtension.class)
+@ExtendWith(BrowserMatchExtension.class)
 public class BaseUITest extends BaseTest {
     @BeforeAll
     public static void setupSelenoid() {
@@ -25,13 +37,33 @@ public class BaseUITest extends BaseTest {
         );
     }
 
-    public void authAsUser(String username, String password) {
-        Selenide.open("/");
-        String userAuthHeader = RequestSpecs.getUserAuthHeader(username, password);
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+    @AfterEach
+    void tearDownUi() {
+        deleteUiEntities();
+        closeWebDriver();
     }
 
-    public void authAsUser(CreateUserRequest createUserRequest) {
-        authAsUser(createUserRequest.getUsername(), createUserRequest.getPassword());
+    private void deleteUiEntities() {
+        for (User user : SessionStorage.getUsers()) {
+            List<CreateAccountResponse> accounts = SessionStorage.getAllAccountsForUser(user);
+
+            if (accounts != null) {
+                for (CreateAccountResponse account : accounts) {
+                    try {
+                        UserSteps.deleteAccount(account.getId(), user.getRequest());
+                    } catch (Exception e) {
+                        System.out.println("Failed to delete account " + account.getId());
+                    }
+                }
+            }
+        }
+
+        for (User user : SessionStorage.getUsers()) {
+            try {
+                AdminSteps.deleteUser(user.getResponse().getId());
+            } catch (Exception e) {
+                System.out.println("Failed to delete user " + user.getResponse().getId());
+            }
+        }
     }
 }

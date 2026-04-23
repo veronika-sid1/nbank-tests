@@ -11,55 +11,58 @@ import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import api.specs.RequestSpecs;
 import base.BaseUITest;
+import common.annotations.UserAccount;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ui.elements.AlertPopup;
 import ui.pages.BankAlert;
 import ui.pages.TransferPage;
 import ui.pages.UserDashboard;
 
 import static com.codeborne.selenide.Selenide.refresh;
 import static org.assertj.core.api.Assertions.assertThat;
+import static ui.pages.BasePage.authAsUser;
 
 public class TransferTest extends BaseUITest {
     @DisplayName("User can transfer money between his accounts")
+    @UserSession
+    @UserAccount(value = 2)
     @Test
     public void userCanTransferMoneyBetweenHisAccounts() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
+        User user = SessionStorage.getUser();
 
-        User user = AdminSteps.createUser();
-        CreateAccountResponse account = UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
-
-        CreateAccountResponse accountSecond = UserSteps.createAccount(user.getRequest());
-        long accIdSecondLong = accountSecond.getId();
-        String accIdSecondString = accountSecond.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(2);
 
         UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator
-                .withAmount(accIdLong, transferAmount));
-
-        authAsUser(user.getRequest());
+                .withAmount(account.getId(), transferAmount));
 
         new UserDashboard().open().enterTransferPage();
 
         TransferPage transferPage = new TransferPage();
 
-        transferPage.selectAccount(accIdString)
-                        .setRecipientAccountNumber(accIdSecondString)
-                        .setAmount(transferAmount).confirmDetails().saveTransfer()
-                        .checkAlertMessageAndAccountIdAndAccept(
-                                BankAlert.SUCCESSFUL_TRANSFER.getMessage(), accIdSecondString);
+        transferPage.selectAccount(account.getAccountNumber())
+                        .setRecipientAccountNumber(accountSecond.getAccountNumber())
+                        .setAmount(transferAmount).confirmDetails().saveTransfer();
+
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.SUCCESSFUL_TRANSFER.getMessage())
+                .checkAccountId(accountSecond.getAccountNumber())
+                .acceptAlert();
 
         refresh();
 
-        transferPage.selectAccount(accIdString)
-                .assertSelectedAccount(accIdString, RequestSpecs.INITIAL_BALANCE);
+        transferPage.selectAccount(account.getAccountNumber())
+                .assertSelectedAccount(account.getAccountNumber(), RequestSpecs.INITIAL_BALANCE);
 
-        transferPage.selectAccount(accIdSecondString)
-                .assertSelectedAccount(accIdSecondString, transferAmount);
+        transferPage.selectAccount(accountSecond.getAccountNumber())
+                .assertSelectedAccount(accountSecond.getAccountNumber(), transferAmount);
 
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accIdSecondLong);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
@@ -68,32 +71,31 @@ public class TransferTest extends BaseUITest {
     }
 
     @DisplayName("User can transfer money to another user's account")
+    @UserSession(value = 2)
+    @UserAccount(value = 2)
     @Test
     public void userCanTransferMoneyToAnotherUsersAccount() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
-        User userSecond = AdminSteps.createUser();
+        User user = SessionStorage.getUser(1);
+        User userSecond = SessionStorage.getUser(2);
 
-        CreateAccountResponse account =  UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1, 1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(2, 1);
 
-        CreateAccountResponse accountSecond =  UserSteps.createAccount(userSecond.getRequest());
-        long accIdSecondLong = accountSecond.getId();
-        String accIdSecondString = accountSecond.getAccountNumber();
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+                .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(transferAmount)
+                .confirmDetails().saveTransfer();
 
-        authAsUser(user.getRequest());
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.SUCCESSFUL_TRANSFER.getMessage())
+                .checkAccountId(accountSecond.getAccountNumber())
+                .acceptAlert();
 
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
-                .setRecipientAccountNumber(accIdSecondString).setAmount(transferAmount)
-                .confirmDetails().saveTransfer().checkAlertMessageAndAccountIdAndAccept(
-                        BankAlert.SUCCESSFUL_TRANSFER.getMessage(), accIdSecondString);
-
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(userSecond.getRequest(), accIdSecondLong);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(userSecond.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
@@ -102,28 +104,28 @@ public class TransferTest extends BaseUITest {
     }
 
     @DisplayName("User cannot transfer money without filling all fields of transfer form")
+    @UserSession(value = 2)
+    @UserAccount(value = 2)
     @Test
     public void userCannotTransferMoneyIfNotAllFieldsFilled() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
-        User userSecond = AdminSteps.createUser();
+        User user = SessionStorage.getUser(1);
+        User userSecond = SessionStorage.getUser(2);
 
-        CreateAccountResponse account =  UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1, 1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(2, 1);
 
-        CreateAccountResponse accountSecond = UserSteps.createAccount(userSecond.getRequest());
-        long accIdSecondLong = accountSecond.getId();
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
-        authAsUser(user.getRequest());
+        new TransferPage().open().selectAccount(account.getAccountNumber()).saveTransfer();
 
-        new TransferPage().open().selectAccount(accIdString).saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.ALL_FIELDS_MUST_BE_FILLED.getMessage());
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.ALL_FIELDS_MUST_BE_FILLED.getMessage())
+                .acceptAlert();
 
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(userSecond.getRequest(), accIdSecondLong);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(userSecond.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(transferAmount);
@@ -132,81 +134,81 @@ public class TransferTest extends BaseUITest {
     }
 
     @DisplayName("User cannot transfer money to the same account")
+    @UserSession
+    @UserAccount
     @Test
     public void userCannotTransferToSameAccount() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
+        User user = SessionStorage.getUser();
+        CreateAccountResponse account = SessionStorage.getAccount(1);
 
-        CreateAccountResponse account =  UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+                .setRecipientAccountNumberId(account.getAccountNumber()).setAmount(transferAmount)
+                .confirmDetails().saveTransfer();
 
-        authAsUser(user.getRequest());
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.CANNOT_TRANSFER_TO_SAME_ACCOUNT.getMessage())
+                .acceptAlert();
 
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
-                .setRecipientAccountNumberId(accIdString).setAmount(transferAmount)
-                .confirmDetails().saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.CANNOT_TRANSFER_TO_SAME_ACCOUNT.getMessage());
-
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(transferAmount);
     }
 
     @DisplayName("User cannot transfer money to non-existent account")
+    @UserSession
+    @UserAccount
     @Test
     public void userCannotTransferToNonExistentAccount() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
+        User user = SessionStorage.getUser();
+        CreateAccountResponse account = SessionStorage.getAccount(1);
 
-        CreateAccountResponse account = UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
-
-        authAsUser(user.getRequest());
-
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
                 .setRecipientAccountNumberId(String.valueOf(Integer.MAX_VALUE)).setAmount(RequestSpecs.MAX_DEPOSIT)
-                .confirmDetails().saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.NO_USER_WITH_THIS_ACCOUNT.getMessage());
+                .confirmDetails().saveTransfer();
 
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.NO_USER_WITH_THIS_ACCOUNT.getMessage())
+                .acceptAlert();
+
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(transferAmount);
     }
 
     @DisplayName("User cannot transfer less than min limit")
+    @UserSession
+    @UserAccount(value = 2)
     @Test
     public void userCannotTransferLessThanMinLimit() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
-        CreateAccountResponse account = UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        User user = SessionStorage.getUser();
 
-        CreateAccountResponse accountSecond = UserSteps.createAccount(user.getRequest());
-        long accIdLongSecond = accountSecond.getId();
-        String accIdStringSecond = accountSecond.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1, 1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(1, 2);
 
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
-        authAsUser(user.getRequest());
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
-                .setRecipientAccountNumber(accIdStringSecond).setAmount(RequestSpecs.NEGATIVE_AMOUNT)
-                .confirmDetails().saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.TRANSFER_MUST_BE_AT_LEAST_0_01.getMessage());
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+                .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(RequestSpecs.NEGATIVE_AMOUNT)
+                .confirmDetails().saveTransfer();
 
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accIdLongSecond);
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.TRANSFER_MUST_BE_AT_LEAST_0_01.getMessage())
+                .acceptAlert();
+
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(transferAmount);
@@ -215,32 +217,30 @@ public class TransferTest extends BaseUITest {
     }
 
     @DisplayName("User cannot transfer more than max limit")
+    @UserSession
+    @UserAccount(value = 2)
     @Test
     public void userCannotTransferMoreThanMaxLimit() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
+        User user = SessionStorage.getUser();
 
-        CreateAccountResponse account = UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
-
-        CreateAccountResponse accountSecond = UserSteps.createAccount(user.getRequest());
-        long accIdLongSecond = accountSecond.getId();
-        String accIdStringSecond = accountSecond.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1, 1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(1, 2);
 
         TestHelpers.repeat(3, () -> UserSteps.makeDeposit(user.getRequest(),
-                DepositRequestGenerator.withAmount(accIdLong, transferAmount)));
+                DepositRequestGenerator.withAmount(account.getId(), transferAmount)));
 
-        authAsUser(user.getRequest());
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+                .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(RequestSpecs.EXCEEDING_TRANSFER)
+                .confirmDetails().saveTransfer();
 
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
-                .setRecipientAccountNumber(accIdStringSecond).setAmount(RequestSpecs.EXCEEDING_TRANSFER)
-                .confirmDetails().saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.TRANSFER_CANNOT_EXCEED_MAX_LIMIT.getMessage());
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.TRANSFER_CANNOT_EXCEED_MAX_LIMIT.getMessage())
+                .acceptAlert();
 
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accIdLongSecond);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(3 * transferAmount);
@@ -249,32 +249,31 @@ public class TransferTest extends BaseUITest {
     }
 
     @DisplayName("User cannot make transfer with invalid recipient name")
+    @UserSession
+    @UserAccount(value = 2)
     @Test
     public void userCannotMakeTransferWithInvalidRecipientName() {
         String name = RandomData.getName();
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
-        CreateAccountResponse account =  UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        User user = SessionStorage.getUser();
 
-        CreateAccountResponse accountSecond =  UserSteps.createAccount(user.getRequest());
-        long accIdSecondLong = accountSecond.getId();
-        String accIdSecondString = accountSecond.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1, 1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(1, 2);
 
         UserSteps.updateUserName(user.getRequest(), UserRequestGenerator.requestWithName(name));
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        authAsUser(user.getRequest());
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+                .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(transferAmount)
+                .confirmDetails().saveTransfer();
 
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
-                .setRecipientAccountNumber(accIdSecondString).setAmount(transferAmount)
-                .confirmDetails().saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.INCORRECT_RECIPIENT_NAME.getMessage());
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.INCORRECT_RECIPIENT_NAME.getMessage())
+                .acceptAlert();
 
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accIdSecondLong);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(transferAmount);
@@ -283,33 +282,31 @@ public class TransferTest extends BaseUITest {
     }
 
     @DisplayName("User cannot make transfer without confirming details")
+    @UserSession
+    @UserAccount(value = 2)
     @Test
     public void userCannotMakeTransferWithoutConfirmingDetails() {
         String name = RandomData.getName();
         double transferAmount = RandomData.getRandomValidDepositAmount();
 
-        User user = AdminSteps.createUser();
-        CreateAccountResponse account =  UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        User user = SessionStorage.getUser();
 
-        CreateAccountResponse accountSecond =  UserSteps.createAccount(user.getRequest());
-        long accIdSecondLong = accountSecond.getId();
-        String accIdSecondString = accountSecond.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1, 1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(1, 2);
 
         UserSteps.updateUserName(user.getRequest(), UserRequestGenerator.requestWithName(name));
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+                .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(transferAmount)
+                .saveTransfer();
 
-        authAsUser(user.getRequest());
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.ALL_FIELDS_MUST_BE_FILLED.getMessage())
+                .acceptAlert();
 
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
-                .setRecipientAccountNumber(accIdSecondString).setAmount(transferAmount)
-                .saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.ALL_FIELDS_MUST_BE_FILLED.getMessage());
-
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accIdSecondLong);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(transferAmount);
@@ -318,31 +315,30 @@ public class TransferTest extends BaseUITest {
     }
 
     @DisplayName("User cannot transfer more than amount on sender's balance")
+    @UserSession
+    @UserAccount(value = 2)
     @Test
     public void userCannotTransferMoreThanExistingBalance() {
         double transferAmount = RandomData.getRandomValidDepositAmount();
         double exceedingTransferAmount = RandomData.getRandomTransferMoreThanDeposit(transferAmount);
 
-        User user = AdminSteps.createUser();
-        CreateAccountResponse account =  UserSteps.createAccount(user.getRequest());
-        long accIdLong = account.getId();
-        String accIdString = account.getAccountNumber();
+        User user = SessionStorage.getUser();
 
-        CreateAccountResponse accountSecond =  UserSteps.createAccount(user.getRequest());
-        long accIdSecondLong = accountSecond.getId();
-        String accIdSecondString = accountSecond.getAccountNumber();
+        CreateAccountResponse account = SessionStorage.getAccount(1, 1);
+        CreateAccountResponse accountSecond = SessionStorage.getAccount(1, 2);
 
-        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(accIdLong, transferAmount));
+        UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        authAsUser(user.getRequest());
+        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+                .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(exceedingTransferAmount)
+                .confirmDetails().saveTransfer();
 
-        new TransferPage().open().selectAccount(accIdString).setRecipientName(RandomData.getName())
-                .setRecipientAccountNumber(accIdSecondString).setAmount(exceedingTransferAmount)
-                .confirmDetails().saveTransfer().checkAlertMessageAndAccept(
-                        BankAlert.INSUFFICIENT_FUNDS_INVALID_ACC.getMessage());
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.INSUFFICIENT_FUNDS_INVALID_ACC.getMessage())
+                .acceptAlert();
 
-        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), accIdLong);
-        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accIdSecondLong);
+        GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse secondAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         assertThat(firstAccount.getBalance())
                 .isEqualTo(transferAmount);

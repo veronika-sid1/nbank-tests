@@ -6,6 +6,7 @@ import api.models.ErrorResponse;
 import api.models.GetProfileResponse;
 import api.models.UpdateProfileRequest;
 import api.models.UpdateProfileResponse;
+import base.BaseTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

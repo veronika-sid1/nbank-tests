@@ -3,6 +3,7 @@ package iteration2.api;
 import api.entities.User;
 import api.generators.RandomData;
 import api.models.*;
+import base.BaseTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -9,32 +9,38 @@ import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import api.specs.ResponseSpecs;
 import base.BaseUITest;
+import common.annotations.UserSession;
+import common.storage.SessionStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ui.elements.AlertPopup;
 import ui.pages.BankAlert;
 import ui.pages.UpdateNamePage;
 import ui.pages.UserDashboard;
 
 import static com.codeborne.selenide.Selenide.refresh;
 import static org.assertj.core.api.Assertions.assertThat;
+import static ui.pages.BasePage.authAsUser;
 
 public class NameTest extends BaseUITest {
     @DisplayName("User can specify his name")
+    @UserSession
     @Test
     public void userCanSpecifyName() {
         String name = RandomData.getName();
 
-        User user = AdminSteps.createUser();
-
-        authAsUser(user.getRequest());
+        User user = SessionStorage.getUser();
 
         UpdateNamePage updateNamePage = new UpdateNamePage();
         UserDashboard userDashboard = new UserDashboard();
 
         userDashboard.open().enterProfilePage();
 
-        updateNamePage.fillName(name).saveChanges()
-                .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage());
+        updateNamePage.fillName(name).saveChanges();
+
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage())
+                .acceptAlert();
 
         refresh();
 
@@ -48,21 +54,23 @@ public class NameTest extends BaseUITest {
     }
 
     @DisplayName("User can edit name")
+    @UserSession
     @Test
     public void userCanEditName() {
         UpdateProfileRequest nameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
         UpdateProfileRequest editedNameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
 
-        User user = AdminSteps.createUser();
+        User user = SessionStorage.getUser();
 
         UserSteps.updateUserName(user.getRequest(), nameReq);
 
-        authAsUser(user.getRequest());
-
         UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        updateNamePage.open().fillName(editedNameReq.getName()).saveChanges()
-                        .checkAlertMessageAndAccept(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage());
+        updateNamePage.open().fillName(editedNameReq.getName()).saveChanges();
+
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage())
+                .acceptAlert();
 
         refresh();
 
@@ -77,18 +85,20 @@ public class NameTest extends BaseUITest {
     }
 
     @DisplayName("User cannot specify invalid name")
+    @UserSession
     @Test
     public void userCannotSpecifyInvalidName() {
-        String invalidName = "AnnaPavlova123";
+        String invalidName = RandomData.getRandomInvalidName();;
 
-        User user = AdminSteps.createUser();
-
-        authAsUser(user.getRequest());
+        User user = SessionStorage.getUser();
 
         UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        updateNamePage.open().fillName(invalidName).saveChanges()
-                .checkAlertMessageAndAccept(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS.getMessage());
+        updateNamePage.open().fillName(invalidName).saveChanges();
+
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS.getMessage())
+                .acceptAlert();
 
         refresh();
 
@@ -103,16 +113,18 @@ public class NameTest extends BaseUITest {
     }
 
     @DisplayName("User cannot save empty name")
+    @UserSession
     @Test
     public void userCannotSaveEmptyName() {
-        User user = AdminSteps.createUser();
-
-        authAsUser(user.getRequest());
+        User user = SessionStorage.getUser();
 
         UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        updateNamePage.open().saveChanges()
-                .checkAlertMessageAndAccept(BankAlert.ENTER_VALID_NAME.getMessage());
+        updateNamePage.open().saveChanges();
+
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.ENTER_VALID_NAME.getMessage())
+                .acceptAlert();
 
         refresh();
 
@@ -127,20 +139,22 @@ public class NameTest extends BaseUITest {
     }
 
     @DisplayName("User cannot save already saved name")
+    @UserSession
     @Test
     public void userCannotSaveAlreadySavedName() {
         UpdateProfileRequest nameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
 
-        User user = AdminSteps.createUser();
+        User user = SessionStorage.getUser();
 
         UserSteps.updateUserName(user.getRequest(), nameReq);
 
-        authAsUser(user.getRequest());
-
         UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        updateNamePage.open().fillName(nameReq.getName()).saveChanges()
-                .checkAlertMessageAndAccept(BankAlert.NEW_NAME_SAME_AS_CURRENT.getMessage());
+        updateNamePage.open().fillName(nameReq.getName()).saveChanges();
+
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.NEW_NAME_SAME_AS_CURRENT.getMessage())
+                .acceptAlert();
 
         refresh();
 

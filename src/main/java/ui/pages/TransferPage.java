@@ -2,10 +2,13 @@ package ui.pages;
 
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
+import ui.elements.AccountSelect;
 
 import static com.codeborne.selenide.Selenide.$;
 
 public class TransferPage extends BasePage<TransferPage> {
+    private final AccountSelect accountSelect = new AccountSelect();
+
     private SelenideElement recipientField = $(Selectors.byAttribute("placeholder", "Enter recipient name"));
     private SelenideElement recipientAccountNumberField = $(Selectors.byAttribute("placeholder", "Enter recipient account number"));
     private SelenideElement amountField = $(Selectors.byAttribute("placeholder", "Enter amount"));
@@ -15,11 +18,6 @@ public class TransferPage extends BasePage<TransferPage> {
     @Override
     public String url() {
         return "/transfer";
-    }
-
-    public TransferPage selectAccount(String accountNumber) {
-        accountSelector.selectOptionContainingText(accountNumber);
-        return this;
     }
 
     public TransferPage setRecipientName(String name) {
@@ -49,6 +47,16 @@ public class TransferPage extends BasePage<TransferPage> {
 
     public TransferPage saveTransfer() {
         sendTransferButton.click();
+        return this;
+    }
+
+    public TransferPage assertSelectedAccount(String accountNumber, double amount) {
+        accountSelect.shouldHaveSelectedAccount(accountNumber, amount);
+        return this;
+    }
+
+    public TransferPage selectAccount(String accountNumber) {
+        accountSelect.selectAccount(accountNumber);
         return this;
     }
 }

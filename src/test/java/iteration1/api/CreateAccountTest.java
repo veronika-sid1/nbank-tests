@@ -1,7 +1,7 @@
 package iteration1.api;
 
 import api.entities.User;
-import iteration2.api.BaseTest;
+import base.BaseTest;
 import org.junit.jupiter.api.Test;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
