@@ -9,6 +9,7 @@ import base.BaseUITest;
 import common.annotations.AdminSession;
 import org.junit.jupiter.api.Test;
 import ui.elements.AlertPopup;
+import ui.elements.UserBadge;
 import ui.pages.AdminPanel;
 import ui.pages.BankAlert;
 
@@ -20,22 +21,19 @@ public class CreateUserTest extends BaseUITest {
     @Test
     @AdminSession
     public void adminCanCreateUserTest() {
-        // ШАГ 2: админ создает юзера в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
-        AdminPanel adminPanel = new AdminPanel()
-                .open()
-                .createUser(newUser);
+        new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword());
 
         new AlertPopup().checkAlertMessage(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
                 .acceptAlert();
 
+        UserBadge newUserBadge = new AdminPanel().findUserByUsername(newUser.getUsername());
+
         refresh();
 
-        assertTrue(
-                adminPanel.getAllUsers().stream()
-                        .anyMatch(user -> user.getUsername().equals(newUser.getUsername()))
-        );
+        assertThat(newUserBadge)
+                .as("UserBadge should exist on Dashboard after user creation").isNotNull();
 
         // ШАГ 5: проверка, что юзер создан на API
         CreateUserResponse createdUser = AdminSteps.getAllUsers().stream()
@@ -48,15 +46,18 @@ public class CreateUserTest extends BaseUITest {
     @Test
     @AdminSession
     public void adminCannotCreateUserWithInvalidDataTest() {
-        // ШАГ 2: админ создает юзера в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
         newUser.setUsername("a");
 
-//        assertTrue(new AdminPanel().open().createUser(newUser)
-//                .checkAlertMessageAndAccept(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_CHARACTERS.getMessage())
-//                .getAllUsers().stream().noneMatch(userBadge -> userBadge.getUsername().equals(newUser.getUsername())));
+        new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword());
 
-        long usersWithSameUsernameAsNewUser = AdminSteps.getAllUsers().stream().filter(user -> user.getUsername().equals(newUser.getUsername())).count();
+        new AlertPopup().checkAlertMessage(BankAlert.USERNAME_MUST_BE_BETWEEN_3_AND_15_CHARACTERS.getMessage())
+                .acceptAlert();
+
+        assertTrue(new AdminPanel().getAllUsers().stream().noneMatch(userBadge -> userBadge.getUsername().equals(newUser.getUsername())));
+
+        long usersWithSameUsernameAsNewUser = AdminSteps.getAllUsers().stream()
+                .filter(user -> user.getUsername().equals(newUser.getUsername())).count();
 
         assertThat(usersWithSameUsernameAsNewUser).isZero();
     }

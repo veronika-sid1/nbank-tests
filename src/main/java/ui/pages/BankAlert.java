@@ -21,7 +21,7 @@ public enum BankAlert {
     INSUFFICIENT_FUNDS_INVALID_ACC("Invalid transfer: insufficient funds or invalid accounts"),
     NAME_UPDATED_SUCCESSFULLY("✅ Name updated successfully!"),
     NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS("Name must contain two words with letters only"),
-    ENTER_VALID_NAME("❌ Please enter a valid name"),
+    ENTER_VALID_NAME("Please enter a valid name"),
     NEW_NAME_SAME_AS_CURRENT("New name is the same as the current one.");
 
     private final String message;

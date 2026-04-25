@@ -1,20 +1,34 @@
 package ui.elements;
 
 import com.codeborne.selenide.WebDriverRunner;
+import common.utils.RetryUtils;
 import org.openqa.selenium.Alert;
+import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AlertPopup {
     private final String text;
+    private final Alert alert;
 
     public AlertPopup() {
-        Alert alert = new WebDriverWait(WebDriverRunner.getWebDriver(), Duration.ofSeconds(5))
-                .until(ExpectedConditions.alertIsPresent());
+        this.alert = RetryUtils.retry(
+                () -> {
+                    try {
+                        return WebDriverRunner.getWebDriver().switchTo().alert();
+                    } catch (NoAlertPresentException e) {
+                        return null;
+                    }
+                },
+                Objects::nonNull,
+                5,
+                1000
+        );
 
         this.text = alert.getText();
     }
@@ -30,9 +44,7 @@ public class AlertPopup {
     }
 
     public AlertPopup acceptAlert() {
-        new WebDriverWait(WebDriverRunner.getWebDriver(), Duration.ofSeconds(5))
-                .until(ExpectedConditions.alertIsPresent())
-                .accept();
+        alert.accept();
         return this;
     }
 }

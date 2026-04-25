@@ -2,10 +2,8 @@ package iteration2.ui;
 
 import api.entities.User;
 import api.generators.RandomData;
-import api.generators.RandomModelGenerator;
+import api.generators.UserRequestGenerator;
 import api.models.GetProfileResponse;
-import api.models.UpdateProfileRequest;
-import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import api.specs.ResponseSpecs;
 import base.BaseUITest;
@@ -20,7 +18,6 @@ import ui.pages.UserDashboard;
 
 import static com.codeborne.selenide.Selenide.refresh;
 import static org.assertj.core.api.Assertions.assertThat;
-import static ui.pages.BasePage.authAsUser;
 
 public class NameTest extends BaseUITest {
     @DisplayName("User can specify his name")
@@ -36,7 +33,7 @@ public class NameTest extends BaseUITest {
 
         userDashboard.open().enterProfilePage();
 
-        updateNamePage.fillName(name).saveChanges();
+        updateNamePage.waitNameEmpty().fillName(name).saveChanges();
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage())
@@ -57,16 +54,16 @@ public class NameTest extends BaseUITest {
     @UserSession
     @Test
     public void userCanEditName() {
-        UpdateProfileRequest nameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
-        UpdateProfileRequest editedNameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
+        String nameReq = RandomData.getName();
+        String editedNameReq = RandomData.getName();
 
         User user = SessionStorage.getUser();
 
-        UserSteps.updateUserName(user.getRequest(), nameReq);
+        UserSteps.updateUserName(user.getRequest(), UserRequestGenerator.requestWithName(nameReq));
 
         UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        updateNamePage.open().fillName(editedNameReq.getName()).saveChanges();
+        updateNamePage.open().waitNameLoaded(nameReq).fillName(editedNameReq).saveChanges();
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage())
@@ -74,27 +71,26 @@ public class NameTest extends BaseUITest {
 
         refresh();
 
-        updateNamePage.checkName(editedNameReq.getName()).returnToMainPage();
+        updateNamePage.checkName(editedNameReq).returnToMainPage();
 
-        new UserDashboard().checkUsernameOnDashboardPage(editedNameReq.getName());
+        new UserDashboard().checkUsernameOnDashboardPage(editedNameReq);
 
         GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
         assertThat(getProfileResponse.getName())
-                .isEqualTo(editedNameReq.getName());
+                .isEqualTo(editedNameReq);
     }
 
     @DisplayName("User cannot specify invalid name")
     @UserSession
     @Test
     public void userCannotSpecifyInvalidName() {
-        String invalidName = RandomData.getRandomInvalidName();;
+        String invalidName = RandomData.getRandomInvalidName();
 
         User user = SessionStorage.getUser();
 
         UpdateNamePage updateNamePage = new UpdateNamePage();
-
-        updateNamePage.open().fillName(invalidName).saveChanges();
+        updateNamePage.open().waitNameEmpty().fillName(invalidName).saveChanges();
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS.getMessage())
@@ -104,7 +100,7 @@ public class NameTest extends BaseUITest {
 
         updateNamePage.checkName(ResponseSpecs.NONAME).returnToMainPage();
 
-        new UserDashboard().checkUsernameOnDashboardPage(ResponseSpecs.NONAME);
+        new UserDashboard().checkUsernameOnDashboardPage(ResponseSpecs.NONAME.toLowerCase());
 
         GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
@@ -142,15 +138,15 @@ public class NameTest extends BaseUITest {
     @UserSession
     @Test
     public void userCannotSaveAlreadySavedName() {
-        UpdateProfileRequest nameReq = RandomModelGenerator.generate(UpdateProfileRequest.class);
+        String nameReq = RandomData.getName();
 
         User user = SessionStorage.getUser();
 
-        UserSteps.updateUserName(user.getRequest(), nameReq);
+        UserSteps.updateUserName(user.getRequest(), UserRequestGenerator.requestWithName(nameReq));
 
         UpdateNamePage updateNamePage = new UpdateNamePage();
 
-        updateNamePage.open().fillName(nameReq.getName()).saveChanges();
+        updateNamePage.open().waitNameLoaded(nameReq).fillName(nameReq).saveChanges();
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.NEW_NAME_SAME_AS_CURRENT.getMessage())
@@ -158,12 +154,12 @@ public class NameTest extends BaseUITest {
 
         refresh();
 
-        updateNamePage.checkName(nameReq.getName()).returnToMainPage();
+        updateNamePage.checkName(nameReq).returnToMainPage();
 
-        new UserDashboard().checkUsernameOnDashboardPage(nameReq.getName());
+        new UserDashboard().checkUsernameOnDashboardPage(nameReq);
         GetProfileResponse getProfileResponse = UserSteps.getProfile(user.getRequest());
 
         assertThat(getProfileResponse.getName())
-                .isEqualTo(nameReq.getName());
+                .isEqualTo(nameReq);
     }
 }

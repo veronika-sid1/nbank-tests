@@ -1,12 +1,15 @@
 package ui.pages;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.ex.ElementNotFound;
+import common.utils.RetryUtils;
 import lombok.Getter;
 
+import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.refresh;
 
 @Getter
 public class UserDashboard extends BasePage<UserDashboard> {
@@ -19,11 +22,6 @@ public class UserDashboard extends BasePage<UserDashboard> {
     @Override
     public String url() {
         return "/dashboard";
-    }
-
-    public UserDashboard createNewAccount() {
-        createNewAccount.click();
-        return this;
     }
 
     public UserDashboard enterDepositPage() {
@@ -42,7 +40,9 @@ public class UserDashboard extends BasePage<UserDashboard> {
     }
 
     public UserDashboard checkUsernameOnDashboardPage(String name) {
-        welcomeText.shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, " + name));
+        welcomeText.shouldBe(visible)
+                .shouldHave(text("Welcome, " + name));
+
         return this;
     }
 }

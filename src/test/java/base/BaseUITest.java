@@ -40,6 +40,7 @@ public class BaseUITest extends BaseTest {
     @AfterEach
     void tearDownUi() {
         deleteUiEntities();
+        SessionStorage.clear();
         closeWebDriver();
     }
 

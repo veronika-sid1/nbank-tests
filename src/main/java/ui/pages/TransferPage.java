@@ -2,8 +2,11 @@ package ui.pages;
 
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
+import common.utils.RetryUtils;
 import ui.elements.AccountSelect;
 
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 
 public class TransferPage extends BasePage<TransferPage> {
@@ -41,12 +44,18 @@ public class TransferPage extends BasePage<TransferPage> {
     }
 
     public TransferPage confirmDetails() {
-        detailsConfirmationCheckbox.setSelected(true);
+        detailsConfirmationCheckbox.shouldBe(visible, enabled);
+
+        if (!detailsConfirmationCheckbox.isSelected()) {
+            detailsConfirmationCheckbox.click();
+        }
+
+        detailsConfirmationCheckbox.shouldBe(checked);
         return this;
     }
 
     public TransferPage saveTransfer() {
-        sendTransferButton.click();
+        sendTransferButton.shouldBe(visible, enabled, interactable).click();
         return this;
     }
 
@@ -55,8 +64,34 @@ public class TransferPage extends BasePage<TransferPage> {
         return this;
     }
 
+    //если будет продолжать флакать при нахождении аккаунта в выпадающем списке
+    public TransferPage waitAccountVisible(String accountNumber) {
+        accountSelect.waitOptionVisible(accountNumber);
+        return this;
+    }
+
     public TransferPage selectAccount(String accountNumber) {
         accountSelect.selectAccount(accountNumber);
+        RetryUtils.retry(
+                () -> accountSelect.selectAccount(accountNumber),
+                value -> value != null,
+                3,
+                1000
+        );
+
+        accountSelect.shouldHaveSelectedAccountOnlyAccCheck(accountNumber);
+        return this;
+    }
+
+    //для исследования падения
+    public TransferPage printTransferFormState() {
+        System.out.println("URL = " + WebDriverRunner.url());
+        System.out.println("SELECTED ACCOUNT = " + accountSelect);
+        System.out.println("RECIPIENT NAME = " + recipientField.getValue());
+        System.out.println("RECIPIENT ACCOUNT = " + recipientAccountNumberField.getValue());
+        System.out.println("AMOUNT = " + amountField.getValue());
+        System.out.println("CHECKBOX SELECTED = " + detailsConfirmationCheckbox.isSelected());
+        System.out.println("SAVE ENABLED = " + sendTransferButton.isEnabled());
         return this;
     }
 }

@@ -1,10 +1,11 @@
 package ui.elements;
 
 import com.codeborne.selenide.SelenideElement;
+import lombok.Getter;
 
 import java.util.Locale;
 
-import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 
 public class AccountSelect extends BaseElement {
@@ -18,7 +19,14 @@ public class AccountSelect extends BaseElement {
     }
 
     public AccountSelect selectAccount(String accountNumber) {
+        element.shouldBe(visible, enabled);
+
+        element.$$("option")
+                .findBy(text(accountNumber))
+                .shouldBe(visible);
+
         element.selectOptionContainingText(accountNumber);
+
         return this;
     }
 
@@ -29,6 +37,23 @@ public class AccountSelect extends BaseElement {
 
         element.getSelectedOption()
                 .shouldHave(text(accountNumber + " (Balance: $" + formattedAmount + ")"));
+
+        return this;
+    }
+
+    public AccountSelect shouldHaveSelectedAccountOnlyAccCheck(String accountNumber) {
+        element.getSelectedOption()
+                .shouldHave(text(accountNumber));
+
+        return this;
+    }
+
+    public AccountSelect waitOptionVisible(String accountNumber) {
+        element.shouldBe(visible, enabled);
+
+        element.$$("option")
+                .findBy(text(accountNumber))
+                .shouldBe(visible);
 
         return this;
     }

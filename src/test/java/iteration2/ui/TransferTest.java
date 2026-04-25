@@ -7,10 +7,10 @@ import api.generators.UserRequestGenerator;
 import api.helpers.TestHelpers;
 import api.models.CreateAccountResponse;
 import api.models.GetUserAccountsResponse;
-import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import api.specs.RequestSpecs;
 import base.BaseUITest;
+import com.codeborne.selenide.WebDriverRunner;
 import common.annotations.UserAccount;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
@@ -23,7 +23,6 @@ import ui.pages.UserDashboard;
 
 import static com.codeborne.selenide.Selenide.refresh;
 import static org.assertj.core.api.Assertions.assertThat;
-import static ui.pages.BasePage.authAsUser;
 
 public class TransferTest extends BaseUITest {
     @DisplayName("User can transfer money between his accounts")
@@ -55,10 +54,10 @@ public class TransferTest extends BaseUITest {
 
         refresh();
 
-        transferPage.selectAccount(account.getAccountNumber())
+        transferPage.waitAccountVisible(account.getAccountNumber()).selectAccount(account.getAccountNumber())
                 .assertSelectedAccount(account.getAccountNumber(), RequestSpecs.INITIAL_BALANCE);
 
-        transferPage.selectAccount(accountSecond.getAccountNumber())
+        transferPage.waitAccountVisible(account.getAccountNumber()).selectAccount(accountSecond.getAccountNumber())
                 .assertSelectedAccount(accountSecond.getAccountNumber(), transferAmount);
 
         GetUserAccountsResponse firstAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
@@ -203,6 +202,9 @@ public class TransferTest extends BaseUITest {
                 .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(RequestSpecs.NEGATIVE_AMOUNT)
                 .confirmDetails().saveTransfer();
 
+        System.out.println("URL AFTER SAVE = " + WebDriverRunner.url());
+        System.out.println("PAGE AFTER SAVE = " + WebDriverRunner.source());
+
         new AlertPopup()
                 .checkAlertMessage(BankAlert.TRANSFER_MUST_BE_AT_LEAST_0_01.getMessage())
                 .acceptAlert();
@@ -233,7 +235,7 @@ public class TransferTest extends BaseUITest {
 
         new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
                 .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(RequestSpecs.EXCEEDING_TRANSFER)
-                .confirmDetails().saveTransfer();
+                .confirmDetails().printTransferFormState().saveTransfer();
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.TRANSFER_CANNOT_EXCEED_MAX_LIMIT.getMessage())
@@ -266,7 +268,7 @@ public class TransferTest extends BaseUITest {
 
         new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
                 .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(transferAmount)
-                .confirmDetails().saveTransfer();
+                .confirmDetails().printTransferFormState().saveTransfer();
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.INCORRECT_RECIPIENT_NAME.getMessage())
