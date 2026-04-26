@@ -5,12 +5,11 @@ import api.models.CreateAccountResponse;
 import api.requests.steps.UserSteps;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 public class SessionStorage {
-    public static final SessionStorage INSTANCE = new SessionStorage();
+    public static final ThreadLocal<SessionStorage> INSTANCE = ThreadLocal.withInitial(SessionStorage::new);
     private final LinkedHashMap<User, UserSteps> userStepsMap = new LinkedHashMap<>();
     private final LinkedHashMap<User, List<CreateAccountResponse>> userAccounts = new LinkedHashMap<>();
 
@@ -18,16 +17,16 @@ public class SessionStorage {
 
     public static void addUsers(List<User> users) {
         for (User user : users) {
-            INSTANCE.userStepsMap.put(user, new UserSteps(user.getRequest().getUsername(), user.getRequest().getPassword()));
+            INSTANCE.get().userStepsMap.put(user, new UserSteps(user.getRequest().getUsername(), user.getRequest().getPassword()));
         }
     }
 
     public static void addAccount(User user, List<CreateAccountResponse> accounts) {
-            INSTANCE.userAccounts.put(user, accounts);
+            INSTANCE.get().userAccounts.put(user, accounts);
     }
 
     public static User getUser(int number) {
-        return new ArrayList<>(INSTANCE.userStepsMap.keySet()).get(number - 1);
+        return new ArrayList<>(INSTANCE.get().userStepsMap.keySet()).get(number - 1);
     }
 
     public static User getUser() {
@@ -35,11 +34,11 @@ public class SessionStorage {
     }
 
     public static List<User> getUsers() {
-        return new ArrayList<>(INSTANCE.userStepsMap.keySet());
+        return new ArrayList<>(INSTANCE.get().userStepsMap.keySet());
     }
 
     public static UserSteps getSteps(int number) {
-        return new ArrayList<>(INSTANCE.userStepsMap.values()).get(number - 1);
+        return new ArrayList<>(INSTANCE.get().userStepsMap.values()).get(number - 1);
     }
 
     public static UserSteps getSteps() {
@@ -57,18 +56,18 @@ public class SessionStorage {
 
     //возможно пригодится для удаления всех акков
     public static List<CreateAccountResponse> getAllAccounts() {
-        return INSTANCE.userAccounts.values().stream()
+        return INSTANCE.get().userAccounts.values().stream()
                 .flatMap(List::stream)
                 .toList();
     }
 
     public static List<CreateAccountResponse> getAllAccountsForUser(User user) {
-        return INSTANCE.userAccounts.get(user);
+        return INSTANCE.get().userAccounts.get(user);
     }
 
     public static List<CreateAccountResponse> getAccounts(int number) {
         User user = getUser(number);
-        return INSTANCE.userAccounts.get(user);
+        return INSTANCE.get().userAccounts.get(user);
     }
 
     public static List<CreateAccountResponse> getAccounts() {
@@ -76,8 +75,9 @@ public class SessionStorage {
     }
 
     public static void clear() {
-        INSTANCE.userStepsMap.clear();
-        INSTANCE.userAccounts.clear();
+        INSTANCE.get().userStepsMap.clear();
+        INSTANCE.get().userAccounts.clear();
+        INSTANCE.remove();
     }
 
 }

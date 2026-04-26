@@ -8,6 +8,7 @@ import org.openqa.selenium.Keys;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.sleep;
 
 @Getter
 public class UpdateNamePage extends BasePage<UpdateNamePage> {
@@ -20,22 +21,28 @@ public class UpdateNamePage extends BasePage<UpdateNamePage> {
         return "/edit-profile";
     }
 
-    public UpdateNamePage fillName(String name) {
-        RetryUtils.retry(
-                () -> {
-                    nameField.click();
-                    nameField.sendKeys(Keys.chord(Keys.CONTROL, "a"));
-                    nameField.sendKeys(Keys.DELETE);
-                    nameField.sendKeys(name);
-                    return nameField.getValue();
-                },
-                value -> value.contains(name),
-                5,
-                1000
-        );
-        nameField.shouldHave(exactValue(name));
+    public UpdateNamePage waitPageLoaded() {
+        nameField.shouldBe(visible, enabled);
+        saveChangesButton.shouldBe(visible);
         return this;
     }
+
+//    public UpdateNamePage fillName(String name) {
+//        RetryUtils.retry(
+//                () -> {
+//                    nameField.shouldBe(visible, enabled, interactable)
+//                            .click();
+//
+//                    nameField.setValue(name);
+//                    return nameField.getValue();
+//                },
+//                value -> value.contains(name),
+//                10,
+//                1000
+//        );
+//        nameField.shouldHave(exactValue(name));
+//        return this;
+//    }
 
     public UpdateNamePage waitNameLoaded(String currentName) {
         nameField.shouldBe(visible, enabled, interactable)
@@ -58,6 +65,36 @@ public class UpdateNamePage extends BasePage<UpdateNamePage> {
 
     public UpdateNamePage checkName(String name) {
         profileUsername.shouldHave(text(name));
+        return this;
+    }
+
+    public UpdateNamePage saveChanges(String expectedName) {
+        nameField.shouldHave(exactValue(expectedName));
+
+        saveChangesButton.shouldBe(visible, enabled).click();
+
+        return this;
+    }
+
+    public UpdateNamePage fillName(String name) {
+        nameField.shouldBe(visible, enabled).click();
+
+        RetryUtils.retry(
+                () -> {
+                    nameField.sendKeys(Keys.CONTROL + "a");
+                    nameField.sendKeys(Keys.BACK_SPACE);
+                    nameField.sendKeys(name);
+                    nameField.pressTab();
+
+                    sleep(300);
+
+                    return nameField.getValue();
+                },
+                actual -> name.equals(actual),
+                5,
+                500
+        );
+
         return this;
     }
 }

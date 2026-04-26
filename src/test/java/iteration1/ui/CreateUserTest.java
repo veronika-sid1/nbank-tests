@@ -23,22 +23,28 @@ public class CreateUserTest extends BaseUITest {
     public void adminCanCreateUserTest() {
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
-        new AdminPanel().open().createUser(newUser.getUsername(), newUser.getPassword());
+        new AdminPanel().open();
 
-        new AlertPopup().checkAlertMessage(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
+        new AdminPanel().createUser(newUser.getUsername(), newUser.getPassword());
+
+        new AlertPopup()
+                .checkAlertMessage(BankAlert.USER_CREATED_SUCCESSFULLY.getMessage())
                 .acceptAlert();
-
-        UserBadge newUserBadge = new AdminPanel().findUserByUsername(newUser.getUsername());
 
         refresh();
 
-        assertThat(newUserBadge)
-                .as("UserBadge should exist on Dashboard after user creation").isNotNull();
+        UserBadge newUserBadge = new AdminPanel()
+                .waitUntilLoaded()
+                .findUserByUsername(newUser.getUsername());
 
-        // ШАГ 5: проверка, что юзер создан на API
         CreateUserResponse createdUser = AdminSteps.getAllUsers().stream()
                 .filter(user -> user.getUsername().equals(newUser.getUsername()))
-                .findFirst().get();
+                .findFirst()
+                .get();
+
+        assertThat(newUserBadge)
+                .as("UserBadge should exist on Dashboard after user creation")
+                .isNotNull();
 
         ModelAssertions.assertThatModels(newUser, createdUser).match();
     }

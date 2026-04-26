@@ -33,7 +33,7 @@ public class NameTest extends BaseUITest {
 
         userDashboard.open().enterProfilePage();
 
-        updateNamePage.waitNameEmpty().fillName(name).saveChanges();
+        updateNamePage.waitPageLoaded().fillName(name).saveChanges(name);
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.NAME_UPDATED_SUCCESSFULLY.getMessage())
@@ -90,7 +90,7 @@ public class NameTest extends BaseUITest {
         User user = SessionStorage.getUser();
 
         UpdateNamePage updateNamePage = new UpdateNamePage();
-        updateNamePage.open().waitNameEmpty().fillName(invalidName).saveChanges();
+        updateNamePage.open().waitPageLoaded().waitNameEmpty().fillName(invalidName).saveChanges();
 
         new AlertPopup()
                 .checkAlertMessage(BankAlert.NAME_MUST_CONTAIN_TWO_WORDS_WITH_LETTERS.getMessage())

@@ -18,7 +18,6 @@ public abstract class BasePage<T extends BasePage> {
 
     protected SelenideElement usernameInput = $(Selectors.byAttribute("placeholder", "Username"));
     protected SelenideElement passwordInput = $(Selectors.byAttribute("placeholder", "Password"));
-    protected SelenideElement accountSelector = $(".account-selector");
     protected SelenideElement homeButton = $(Selectors.byText("\uD83C\uDFE0 Home"));
 
     public T open() {

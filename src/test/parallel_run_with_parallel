@@ -1,0 +1,126 @@
+Thread ForkJoinPool-1-worker-5: Test finished iteration1.ui.CreateAccountTest.userCanCreateAccountTest, test duration 1952 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration1.api.CreateAccountTest.userCanCreateAccountTest, test duration 2041 ms
+Thread ForkJoinPool-1-worker-8: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 2700 ms
+Thread ForkJoinPool-1-worker-11: Test finished iteration2.api.NameTest.userCanEditName, test duration 3749 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.api.DepositTest.userCannotDepositToAnotherUsersAccount, test duration 5756 ms
+Thread ForkJoinPool-1-worker-4: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 7055 ms
+Thread ForkJoinPool-1-worker-8: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 3713 ms
+Thread ForkJoinPool-1-worker-11: Test finished iteration2.api.NameTest.unauthorizedUserCannotSpecifyName, test duration 1949 ms
+Thread ForkJoinPool-1-worker-10: Test finished iteration2.api.TransferTest.userCanTransferToAnotherUsersAccount, test duration 8028 ms
+Thread ForkJoinPool-1-worker-11: Test finished iteration2.api.NameTest.invalidAuthUserCannotSpecifyName, test duration 1589 ms
+Thread ForkJoinPool-1-worker-8: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 1869 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.api.DepositTest.unauthorizedUserCannotDeposit, test duration 2519 ms
+Thread ForkJoinPool-1-worker-9: Test finished iteration1.ui.LoginUserTest.userCanLoginWithCorrectDataTest, test duration 10942 ms
+Thread ForkJoinPool-1-worker-11: Test finished iteration2.api.NameTest.userCanSpecifyName, test duration 1498 ms
+Thread ForkJoinPool-1-worker-5: Test finished iteration1.ui.LoginUserTest.adminCanLoginWithCorrectDataTest, test duration 11983 ms
+Thread ForkJoinPool-1-worker-8: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 1789 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.api.DepositTest.userCannotDepositToNonExistentAccount, test duration 2219 ms
+Thread ForkJoinPool-1-worker-11: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 2091 ms
+Thread ForkJoinPool-1-worker-4: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 6333 ms
+Thread ForkJoinPool-1-worker-8: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 2291 ms
+Thread ForkJoinPool-1-worker-7: Test finished iteration1.ui.CreateUserTest.adminCanCreateUserTest, test duration 7509 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 3419 ms
+Thread ForkJoinPool-1-worker-10: Test finished iteration2.api.TransferTest.userCannotTransferFromSomeoneElsesAccount, test duration 7895 ms
+Thread ForkJoinPool-1-worker-7: Test finished iteration2.api.DepositTest.userWithInvalidAuthCannotDeposit, test duration 2344 ms
+Thread ForkJoinPool-1-worker-15: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 2475 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 2660 ms
+Thread ForkJoinPool-1-worker-1: Test finished iteration2.ui.TransferTest.userCannotTransferMoreThanExistingBalance, test duration 10723 ms
+Thread ForkJoinPool-1-worker-4: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 5027 ms
+Thread ForkJoinPool-1-worker-7: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 2585 ms
+Thread ForkJoinPool-1-worker-3: Test finished iteration2.ui.DepositTest.userCannotMakeInvalidDeposits, test duration 4187 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 1903 ms
+Thread ForkJoinPool-1-worker-15: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 2248 ms
+Thread ForkJoinPool-1-worker-10: Test finished iteration2.api.TransferTest.userCanTransferMoneyBetweenAccounts, test duration 5344 ms
+Thread ForkJoinPool-1-worker-4: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 4240 ms
+Thread ForkJoinPool-1-worker-15: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 2118 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 2759 ms
+Thread ForkJoinPool-1-worker-10: Test finished iteration2.api.TransferTest.userCannotTransferFromNonExistingAccount, test duration 2196 ms
+Thread ForkJoinPool-1-worker-9: Test finished iteration2.ui.NameTest.userCanSpecifyName, test duration 10128 ms
+Thread ForkJoinPool-1-worker-5: Test finished iteration2.ui.TransferTest.userCannotTransferMoreThanMaxLimit, test duration 8859 ms
+Thread ForkJoinPool-1-worker-1: Test finished iteration2.ui.TransferTest.userCannotMakeTransferWithInvalidRecipientName, test duration 8081 ms
+Thread ForkJoinPool-1-worker-20: Test finished iteration2.api.TransferTest.userCannotTransferAboveBalance, test duration 4077 ms
+Thread ForkJoinPool-1-worker-4: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 5223 ms
+Thread ForkJoinPool-1-worker-10: Test finished iteration2.api.TransferTest.unauthorizedUserCannotTransfer, test duration 4570 ms
+Thread ForkJoinPool-1-worker-23: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 4930 ms
+Thread ForkJoinPool-1-worker-22: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 5102 ms
+Thread ForkJoinPool-1-worker-6: Test finished iteration1.ui.CreateUserTest.adminCannotCreateUserWithInvalidDataTest, test duration 27147 ms
+Thread ForkJoinPool-1-worker-20: Test finished iteration2.api.TransferTest.userCannotTransferToNonExistingAccount, test duration 3815 ms
+Thread ForkJoinPool-1-worker-1: Test finished iteration2.api.TransferTest.userWithInvalidAuthCannotTransfer, test duration 5265 ms
+Thread ForkJoinPool-1-worker-11: Test finished iteration2.ui.TransferTest.userCannotTransferLessThanMinLimit, test duration 9134 ms
+Thread ForkJoinPool-1-worker-4: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 5261 ms
+Thread ForkJoinPool-1-worker-10: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 5473 ms
+Thread ForkJoinPool-1-worker-13: Test finished iteration2.ui.DepositTest.userCannotMakeDepositWithoutChoosingAccount, test duration 1959 ms
+Thread ForkJoinPool-1-worker-6: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 6496 ms
+Thread ForkJoinPool-1-worker-8: Test finished iteration2.ui.TransferTest.userCannotTransferToNonExistentAccount, test duration 8198 ms
+Thread ForkJoinPool-1-worker-12: Test finished iteration2.ui.NameTest.userCannotSaveAlreadySavedName, test duration 7107 ms
+Thread ForkJoinPool-1-worker-14: Test finished iteration2.ui.NameTest.userCannotSpecifyInvalidName, test duration 6733 ms
+Thread ForkJoinPool-1-worker-7: Test finished iteration2.ui.TransferTest.userCannotTransferToSameAccount, test duration 5777 ms
+Thread ForkJoinPool-1-worker-3: Test finished iteration2.ui.DepositTest.userCannotMakeInvalidDeposits, test duration 4610 ms
+Thread ForkJoinPool-1-worker-19: Test finished iteration2.ui.DepositTest.userCannotMakeInvalidDeposits, test duration 2955 ms
+Thread ForkJoinPool-1-worker-21: Test finished iteration2.ui.NameTest.userCannotSaveEmptyName, test duration 3025 ms
+Thread ForkJoinPool-1-worker-18: Test finished iteration2.ui.DepositTest.userCanMakeDeposit, test duration 6132 ms
+Thread ForkJoinPool-1-worker-17: Test finished iteration2.ui.NameTest.userCanEditName, test duration 8895 ms
+Thread ForkJoinPool-1-worker-16: Test finished iteration2.ui.TransferTest.userCanTransferMoneyBetweenHisAccounts, test duration 12090 ms
+Thread ForkJoinPool-1-worker-2: Test finished iteration2.ui.TransferTest.userCannotTransferMoneyIfNotAllFieldsFilled, test duration 2223 ms
+Thread ForkJoinPool-1-worker-5: Test finished iteration2.ui.TransferTest.userCannotMakeTransferWithoutConfirmingDetails, test duration 3427 ms
+Thread ForkJoinPool-1-worker-15: Test finished iteration2.ui.TransferTest.userCanTransferMoneyToAnotherUsersAccount, test duration 4478 ms
+
+
+
+| Воркер    | Тест 1                 | Вр1   | Тест 2                       | Вр2   | Тест 3                   | Вр3  | Тест 4                | Вр4  | Σ (мс)    |
+| --------- | ---------------------- | ----- | ---------------------------- | ----- | ------------------------ | ---- | --------------------- | ---- | --------- |
+| worker-2  | API.CreateAccount      | 2041  | API.Deposit.valid            | 3419  | API.Deposit.valid        | 2660 | API.Deposit.invalid   | 2759 | **10879** |
+| worker-4  | API.Transfer.valid     | 7055  | API.Transfer.valid           | 6333  | API.Transfer.valid       | 5027 | API.Transfer.valid    | 4240 | **22655** |
+| worker-10 | API.Transfer.toAnother | 8028  | API.Transfer.fromOther       | 7895  | API.Transfer.valid       | 5344 | API.Transfer.invalid  | 5473 | **26740** |
+| worker-8  | API.Name.invalid       | 2700  | API.Name.invalid             | 3713  | API.Name.invalid         | 1869 | API.Name.invalid      | 1789 | **10071** |
+| worker-11 | API.Name.edit          | 3749  | API.Name.unauthorized        | 1949  | API.Name.invalidAuth     | 1589 | API.Name.valid        | 1498 | **8785**  |
+| worker-7  | UI.CreateUser          | 7509  | API.Deposit.invalidAuth      | 2344  | API.Deposit.valid        | 2585 | UI.Transfer.same      | 5777 | **18215** |
+| worker-5  | UI.CreateAccount       | 1952  | UI.Login.admin               | 11983 | UI.Transfer.max          | 8859 | UI.Transfer.noConfirm | 3427 | **26221** |
+| worker-9  | UI.Login.user          | 10942 | UI.Name.valid                | 10128 | —                        | —    | —                     | —    | **21070** |
+| worker-1  | UI.Transfer.balance    | 10723 | UI.Transfer.invalidRecipient | 8081  | API.Transfer.invalidAuth | 5265 | —                     | —    | **24069** |
+| worker-6  | UI.CreateUser.invalid  | 27147 | API.Transfer.invalid         | 6496  | —                        | —    | —                     | —    | **33643** |
+
+    Test time: 1 минута 13.6 секунды
+    Total time: 01:23 min
+
+--             Maven Build Time Profiler Summary                      --
+[INFO] ------------------------------------------------------------------------
+[INFO] Project discovery time:       32 ms
+[INFO] ------------------------------------------------------------------------
+[INFO] Project Build Time (reactor order):
+[INFO]
+[INFO] nbank-tests:
+[INFO]          118 ms : clean
+[INFO]          112 ms : process-resources
+[INFO]         6088 ms : compile
+[INFO]           12 ms : process-test-resources
+[INFO]         2532 ms : test-compile
+[INFO]        73628 ms : test
+[INFO] ------------------------------------------------------------------------
+[INFO] Lifecycle Phase summary:
+[INFO]
+[INFO]      118 ms : clean
+[INFO]      112 ms : process-resources
+[INFO]     6088 ms : compile
+[INFO]       12 ms : process-test-resources
+[INFO]     2532 ms : test-compile
+[INFO]    73628 ms : test
+[INFO] ------------------------------------------------------------------------
+[INFO] Plugins in lifecycle Phases:
+[INFO]
+[INFO] clean:
+[INFO]      118 ms: org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean (default-clean)
+[INFO] process-resources:
+[INFO]      112 ms: org.apache.maven.plugins:maven-resources-plugin:3.4.0:resources (default-resources)
+[INFO] compile:
+[INFO]      322 ms: org.jetbrains.kotlin:kotlin-maven-plugin:2.2.20:compile (compile)
+[INFO]     5766 ms: org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (compile)
+[INFO] process-test-resources:
+[INFO]       12 ms: org.apache.maven.plugins:maven-resources-plugin:3.4.0:testResources (default-testResources)
+[INFO] test-compile:
+[INFO]       13 ms: org.jetbrains.kotlin:kotlin-maven-plugin:2.2.20:test-compile (test-compile)
+[INFO]     2519 ms: org.apache.maven.plugins:maven-compiler-plugin:3.15.0:testCompile (testCompile)
+[INFO] test:
+[INFO]    73628 ms: org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test)
+[INFO]
+[INFO]    82490 ms plugins execution summary.

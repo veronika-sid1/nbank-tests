@@ -1,0 +1,121 @@
+    Thread main: Test finished iteration1.api.CreateAccountTest.userCanCreateAccountTest, test duration 3551 ms
+    Thread main: Test finished iteration1.ui.CreateAccountTest.userCanCreateAccountTest, test duration 408 ms
+    Thread main: Test finished iteration1.ui.CreateUserTest.adminCanCreateUserTest, test duration 12484 ms
+    Thread main: Test finished iteration1.ui.CreateUserTest.adminCannotCreateUserWithInvalidDataTest, test duration 10218 ms
+    Thread main: Test finished iteration1.ui.LoginUserTest.userCanLoginWithCorrectDataTest, test duration 3440 ms
+    Thread main: Test finished iteration1.ui.LoginUserTest.adminCanLoginWithCorrectDataTest, test duration 3077 ms
+    Thread main: Test finished iteration2.api.DepositTest.userWithInvalidAuthCannotDeposit, test duration 1843 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 1100 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 803 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 791 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 897 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 760 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 699 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 836 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 785 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositToNonExistentAccount, test duration 408 ms
+    Thread main: Test finished iteration2.api.DepositTest.unauthorizedUserCannotDeposit, test duration 577 ms
+    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositToAnotherUsersAccount, test duration 1274 ms
+    Thread main: Test finished iteration2.api.NameTest.userCanEditName, test duration 707 ms
+    Thread main: Test finished iteration2.api.NameTest.unauthorizedUserCannotSpecifyName, test duration 372 ms
+    Thread main: Test finished iteration2.api.NameTest.invalidAuthUserCannotSpecifyName, test duration 375 ms
+    Thread main: Test finished iteration2.api.NameTest.userCanSpecifyName, test duration 474 ms
+    Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 459 ms
+    Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 515 ms
+    Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 459 ms
+    Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 473 ms
+    Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 442 ms
+    Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 408 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferToAnotherUsersAccount, test duration 1402 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferFromSomeoneElsesAccount, test duration 1317 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferMoneyBetweenAccounts, test duration 1446 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferFromNonExistingAccount, test duration 639 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferAboveBalance, test duration 1265 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1261 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1287 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1225 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1360 ms
+    Thread main: Test finished iteration2.api.TransferTest.unauthorizedUserCannotTransfer, test duration 1073 ms
+    Thread main: Test finished iteration2.api.TransferTest.userWithInvalidAuthCannotTransfer, test duration 1028 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferToNonExistingAccount, test duration 869 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1351 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1199 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1215 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1165 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1178 ms
+    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1199 ms
+    Thread main: Test finished iteration2.ui.DepositTest.userCannotMakeDepositWithoutChoosingAccount, test duration 573 ms
+    Thread main: Test finished iteration2.ui.DepositTest.userCanMakeDeposit, test duration 2760 ms
+    Thread main: Test finished iteration2.ui.DepositTest.userCannotMakeInvalidDeposits, test duration 1593 ms
+    Thread main: Test finished iteration2.ui.DepositTest.userCannotMakeInvalidDeposits, test duration 3801 ms
+    Thread main: Test finished iteration2.ui.DepositTest.userCannotMakeInvalidDeposits, test duration 1715 ms
+    Thread main: Test finished iteration2.ui.NameTest.userCannotSaveAlreadySavedName, test duration 2919 ms
+    Thread main: Test finished iteration2.ui.NameTest.userCannotSpecifyInvalidName, test duration 2470 ms
+    Thread main: Test finished iteration2.ui.NameTest.userCanEditName, test duration 3140 ms
+    Thread main: Test finished iteration2.ui.NameTest.userCannotSaveEmptyName, test duration 1056 ms
+    Thread main: Test finished iteration2.ui.NameTest.userCanSpecifyName, test duration 3300 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotTransferMoreThanMaxLimit, test duration 3343 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotTransferLessThanMinLimit, test duration 2360 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotTransferToNonExistentAccount, test duration 2832 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotTransferToSameAccount, test duration 1942 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCanTransferMoneyBetweenHisAccounts, test duration 4141 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCanTransferMoneyToAnotherUsersAccount, test duration 3036 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotTransferMoneyIfNotAllFieldsFilled, test duration 1250 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotMakeTransferWithoutConfirmingDetails, test duration 2142 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotMakeTransferWithInvalidRecipientName, test duration 3692 ms
+    Thread main: Test finished iteration2.ui.TransferTest.userCannotTransferMoreThanExistingBalance, test duration 2763 ms
+
+    | Воркер | Тест 1                                  | Вр1  | Тест 2                                  | Вр2  | Тест 3                                  | Вр3   | Тест 4                                  | Вр4   | Тест 5                                  | Вр5  | Тест 6                                  | Вр6  | Тест 7                                  | Вр7  | Тест 8                                  | Вр8  | Тест 9                                  | Вр9  | Тест 10                                 | Вр10 | Σ (мс) |
+    |--------|------------------------------------------|------|------------------------------------------|------|------------------------------------------|-------|------------------------------------------|-------|------------------------------------------|------|------------------------------------------|------|------------------------------------------|------|------------------------------------------|------|------------------------------------------|------|------------------------------------------|------|--------|
+    | main   | API.CreateAccount                        | 3551 | UI.CreateAccount                         | 408  | UI.CreateUser                            | 12484 | UI.CreateUser.invalid                    | 10218 | UI.Login.user                            | 3440 | UI.Login.admin                           | 3077 | API.Deposit.invalidAuth                  | 1843 | API.Deposit.invalid                      | 1100 | API.Deposit.invalid                      | 803  | API.Deposit.invalid                      | 791  | ~196000 |
+    |        | API.Deposit.invalid                      | 897  | API.Deposit.valid                        | 760  | API.Deposit.valid                        | 699   | API.Deposit.valid                        | 836   | API.Deposit.valid                        | 785  | API.Deposit.nonExistent                  | 408  | API.Deposit.unauthorized                 | 577  | API.Deposit.otherUser                    | 1274 | API.Name.edit                            | 707  | API.Name.unauthorized                    | 372  |        |
+    |        | API.Name.invalidAuth                     | 375  | API.Name.valid                           | 474  | API.Name.invalid                         | 459   | API.Name.invalid                         | 515   | API.Name.invalid                         | 459  | API.Name.invalid                         | 473  | API.Name.invalid                         | 442  | API.Name.invalid                         | 408  | API.Transfer.toAnotherUser               | 1402 |        |
+    |        | API.Transfer.fromOther                   | 1317 | API.Transfer.between                     | 1446 | API.Transfer.nonExisting                 | 639   | API.Transfer.aboveBalance                | 1265  | API.Transfer.invalid                     | 1261 | API.Transfer.invalid                     | 1287 | API.Transfer.invalid                     | 1225 | API.Transfer.invalid                     | 1360 | API.Transfer.unauthorized                | 1073 |        |
+    |        | API.Transfer.invalidAuth                 | 1028 | API.Transfer.nonExisting                 | 869  | API.Transfer.valid                       | 1351  | API.Transfer.valid                       | 1199  | API.Transfer.valid                       | 1215 | API.Transfer.valid                       | 1165 | API.Transfer.valid                       | 1178 | API.Transfer.valid                       | 1199 | UI.Deposit.noAccount                     | 573  |        |
+    |        | UI.Deposit.valid                        | 2760 | UI.Deposit.invalid                       | 1593 | UI.Deposit.invalid                       | 3801  | UI.Deposit.invalid                       | 1715  | UI.Name.duplicate                        | 2919 | UI.Name.invalid                          | 2470 | UI.Name.edit                             | 3140 | UI.Name.empty                            | 1056 | UI.Name.valid                            | 3300 |        |
+    |        | UI.Transfer.max                         | 3343 | UI.Transfer.min                          | 2360 | UI.Transfer.nonExistent                  | 2832  | UI.Transfer.same                         | 1942  | UI.Transfer.between                      | 4141 | UI.Transfer.toAnother                    | 3036 | UI.Transfer.emptyFields                  | 1250 | UI.Transfer.noConfirm                    | 2142 | UI.Transfer.invalidRecipient             | 3692 |        |
+    |        | UI.Transfer.balance                     | 2763 |                                          |      |                                          |       |                                          |       |                                          |      |                                          |      |                                          |      |                                          |      |                                          |      |        |
+
+    Test time: 2 минуты 48.3 секунды
+    Total time: 3.33 минуты
+
+    Project Build Time (reactor order):
+
+    [INFO]
+    [INFO] nbank-tests:
+    [INFO]          123 ms : clean
+    [INFO]           95 ms : process-resources
+    [INFO]        11669 ms : compile
+    [INFO]           16 ms : process-test-resources
+    [INFO]         2969 ms : test-compile
+    [INFO]       197569 ms : test
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Lifecycle Phase summary:
+    [INFO]
+    [INFO]      123 ms : clean
+    [INFO]       95 ms : process-resources
+    [INFO]    11669 ms : compile
+    [INFO]       16 ms : process-test-resources
+    [INFO]     2969 ms : test-compile
+    [INFO]   197569 ms : test
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Plugins in lifecycle Phases:
+    [INFO]
+    [INFO] clean:
+    [INFO]      123 ms: org.apache.maven.plugins:maven-clean-plugin:3.2.0:clean (default-clean)
+    [INFO] process-resources:
+    [INFO]       95 ms: org.apache.maven.plugins:maven-resources-plugin:3.4.0:resources (default-resources)
+    [INFO] compile:
+    [INFO]      312 ms: org.jetbrains.kotlin:kotlin-maven-plugin:2.2.20:compile (compile)
+    [INFO]    11357 ms: org.apache.maven.plugins:maven-compiler-plugin:3.15.0:compile (compile)
+    [INFO] process-test-resources:
+    [INFO]       16 ms: org.apache.maven.plugins:maven-resources-plugin:3.4.0:testResources (default-testResources)
+    [INFO] test-compile:
+    [INFO]       28 ms: org.jetbrains.kotlin:kotlin-maven-plugin:2.2.20:test-compile (test-compile)
+    [INFO]     2941 ms: org.apache.maven.plugins:maven-compiler-plugin:3.15.0:testCompile (testCompile)
+    [INFO] test:
+    [INFO]   197569 ms: org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test)
+    [INFO]
+    [INFO]   212441 ms plugins execution summary.
+    [INFO] ------------------------------------------------------------------------
+    [INFO] ForkTime: 0

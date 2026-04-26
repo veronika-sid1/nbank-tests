@@ -198,7 +198,8 @@ public class TransferTest extends BaseUITest {
 
         UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+        new TransferPage().open().waitAccountVisible(account.getAccountNumber())
+                .selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
                 .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(RequestSpecs.NEGATIVE_AMOUNT)
                 .confirmDetails().saveTransfer();
 
@@ -331,7 +332,8 @@ public class TransferTest extends BaseUITest {
 
         UserSteps.makeDeposit(user.getRequest(), DepositRequestGenerator.withAmount(account.getId(), transferAmount));
 
-        new TransferPage().open().selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
+        new TransferPage().open().waitAccountVisible(account.getAccountNumber())
+                .selectAccount(account.getAccountNumber()).setRecipientName(RandomData.getName())
                 .setRecipientAccountNumber(accountSecond.getAccountNumber()).setAmount(exceedingTransferAmount)
                 .confirmDetails().saveTransfer();
 

@@ -75,7 +75,7 @@ public class TransferPage extends BasePage<TransferPage> {
         RetryUtils.retry(
                 () -> accountSelect.selectAccount(accountNumber),
                 value -> value != null,
-                3,
+                5,
                 1000
         );
 

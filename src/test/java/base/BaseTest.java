@@ -1,17 +1,20 @@
 package base;
 
 import api.models.CreateUserRequest;
+import common.extensions.TimingExtension;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@ExtendWith(TimingExtension.class)
 public class BaseTest {
     protected SoftAssertions softly;
     protected Map<Long, CreateUserRequest> accountsToDelete = new HashMap<>();
