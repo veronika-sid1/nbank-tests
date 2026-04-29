@@ -7,6 +7,7 @@ import api.models.GetProfileResponse;
 import api.requests.steps.UserSteps;
 import api.specs.ResponseSpecs;
 import base.BaseUITest;
+import common.annotations.APIVersion;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +21,7 @@ import static com.codeborne.selenide.Selenide.refresh;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class NameTest extends BaseUITest {
+    @APIVersion("with_validation_fix")
     @DisplayName("User can specify his name")
     @UserSession
     @Test
@@ -50,6 +52,7 @@ public class NameTest extends BaseUITest {
                 .isEqualTo(name);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User can edit name")
     @UserSession
     @Test
@@ -81,6 +84,7 @@ public class NameTest extends BaseUITest {
                 .isEqualTo(editedNameReq);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot specify invalid name")
     @UserSession
     @Test
@@ -108,6 +112,7 @@ public class NameTest extends BaseUITest {
                 .isNull();
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot save empty name")
     @UserSession
     @Test
@@ -134,6 +139,7 @@ public class NameTest extends BaseUITest {
                 .isNull();
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot save already saved name")
     @UserSession
     @Test

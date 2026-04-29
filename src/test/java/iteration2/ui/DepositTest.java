@@ -7,6 +7,7 @@ import api.models.GetUserAccountsResponse;
 import api.requests.steps.UserSteps;
 import api.specs.RequestSpecs;
 import base.BaseUITest;
+import common.annotations.APIVersion;
 import common.annotations.UserAccount;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
@@ -25,6 +26,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DepositTest extends BaseUITest {
+    @APIVersion("with_validation_fix")
     @DisplayName("User can make a deposit")
     @UserSession
     @UserAccount
@@ -63,6 +65,7 @@ public class DepositTest extends BaseUITest {
         );
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot make an invalid deposit")
     @UserSession
     @UserAccount
@@ -90,6 +93,7 @@ public class DepositTest extends BaseUITest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot make a deposit without choosing an account")
     @UserSession
     @UserAccount

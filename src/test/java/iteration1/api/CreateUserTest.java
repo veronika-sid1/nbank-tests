@@ -17,6 +17,7 @@ import api.specs.ResponseSpecs;
 import java.util.List;
 import java.util.stream.Stream;
 
+
 public class CreateUserTest extends BaseTest {
     @Test
     public void adminCanCreateUserWithCorrectData() {

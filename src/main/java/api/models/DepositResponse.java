@@ -16,6 +16,7 @@ public class DepositResponse extends BaseModel {
     private String accountNumber;
     private double balance;
     private List<Transactions> transactions;
+    private String timestampAsString;
 
     @Data
     @AllArgsConstructor
@@ -26,6 +27,8 @@ public class DepositResponse extends BaseModel {
         private double amount;
         private String type;
         private String timestamp;
+        private String timestampAsString;
         private long relatedAccountId;
+        private double amountAsDouble;
     }
 }

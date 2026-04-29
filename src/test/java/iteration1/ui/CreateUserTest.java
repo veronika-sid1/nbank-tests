@@ -6,6 +6,7 @@ import api.models.CreateUserResponse;
 import api.models.comparison.ModelAssertions;
 import api.requests.steps.AdminSteps;
 import base.BaseUITest;
+import common.annotations.APIVersion;
 import common.annotations.AdminSession;
 import org.junit.jupiter.api.Test;
 import ui.elements.AlertPopup;
@@ -18,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CreateUserTest extends BaseUITest {
+    @APIVersion("with_validation_fix")
     @Test
     @AdminSession
     public void adminCanCreateUserTest() {
@@ -49,6 +51,7 @@ public class CreateUserTest extends BaseUITest {
         ModelAssertions.assertThatModels(newUser, createdUser).match();
     }
 
+    @APIVersion("with_validation_fix")
     @Test
     @AdminSession
     public void adminCannotCreateUserWithInvalidDataTest() {

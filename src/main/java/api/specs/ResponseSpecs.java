@@ -11,8 +11,8 @@ public class ResponseSpecs {
     public static final String NONAME = "Noname";
 
     public static final String PROFILE_UPDATED = "Profile updated successfully";
-    public static final String DEPOSIT_TOO_LARGE = "Deposit amount cannot exceed 5000";
-    public static final String DEPOSIT_TOO_SMALL = "Deposit amount must be at least 0.01";
+    public static final String DEPOSIT_TOO_LARGE = "Deposit amount exceeds the 5000 limit";
+    public static final String DEPOSIT_TOO_SMALL = "Invalid account or amount";
     public static final String FORBIDDEN = "Unauthorized access to account";
     public static final String ACCOUNT_NOT_FOUND = "Account is not found: ";
     public static final String TRANSFER_SUCCESSFUL = "Transfer successful";

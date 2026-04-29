@@ -11,6 +11,7 @@ import api.requests.steps.UserSteps;
 import api.specs.RequestSpecs;
 import base.BaseUITest;
 import com.codeborne.selenide.WebDriverRunner;
+import common.annotations.APIVersion;
 import common.annotations.UserAccount;
 import common.annotations.UserSession;
 import common.storage.SessionStorage;
@@ -25,6 +26,7 @@ import static com.codeborne.selenide.Selenide.refresh;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TransferTest extends BaseUITest {
+    @APIVersion("with_validation_fix")
     @DisplayName("User can transfer money between his accounts")
     @UserSession
     @UserAccount(value = 2)
@@ -69,6 +71,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(transferAmount);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User can transfer money to another user's account")
     @UserSession(value = 2)
     @UserAccount(value = 2)
@@ -102,6 +105,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(transferAmount);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot transfer money without filling all fields of transfer form")
     @UserSession(value = 2)
     @UserAccount(value = 2)
@@ -132,6 +136,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot transfer money to the same account")
     @UserSession
     @UserAccount
@@ -158,6 +163,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(transferAmount);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot transfer money to non-existent account")
     @UserSession
     @UserAccount
@@ -184,6 +190,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(transferAmount);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot transfer less than min limit")
     @UserSession
     @UserAccount(value = 2)
@@ -219,6 +226,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot transfer more than max limit")
     @UserSession
     @UserAccount(value = 2)
@@ -251,6 +259,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot make transfer with invalid recipient name")
     @UserSession
     @UserAccount(value = 2)
@@ -284,6 +293,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot make transfer without confirming details")
     @UserSession
     @UserAccount(value = 2)
@@ -317,6 +327,7 @@ public class TransferTest extends BaseUITest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
     }
 
+    @APIVersion("with_validation_fix")
     @DisplayName("User cannot transfer more than amount on sender's balance")
     @UserSession
     @UserAccount(value = 2)
