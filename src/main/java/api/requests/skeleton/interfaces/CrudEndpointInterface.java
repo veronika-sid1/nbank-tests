@@ -7,6 +7,7 @@ public interface CrudEndpointInterface {
     Object post(BaseModel model);
     Object get();
     Object get(long id);
+    Object get(String pathParamName, Object pathParamValue);
     Object update(BaseModel model);
     Object delete(long id);
 }

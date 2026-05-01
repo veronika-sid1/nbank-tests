@@ -20,6 +20,8 @@ public class ResponseSpecs {
     public static final String TRANSFER_TOO_SMALL = "Transfer amount must be at least 0.01";
     public static final String INSUFFICIENT_FUNDS_INVALID_ACC = "Invalid transfer: insufficient funds or invalid accounts";
     public static final String NAME_VALIDATION = "Name must contain two words with letters only";
+    public static final String WITHOUT_CHECKING_FRAUD_MESSAGE = "This transaction does not require fraud checking.";
+    public static final String WITHOUT_CHECKING_FRAUD_STATUS = "NO_FRAUD_CHECK_REQUIRED";
 
     private ResponseSpecs() {}
 

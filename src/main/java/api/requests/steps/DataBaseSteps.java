@@ -1,10 +1,10 @@
 package api.requests.steps;
 
+import api.configs.Config;
+import api.dao.AccountDao;
+import api.dao.UserDao;
 import api.database.Condition;
 import api.database.DBRequest;
-import api.dao.UserDao;
-import api.dao.AccountDao;
-import api.configs.Config;
 import common.helpers.StepLogger;
 
 import java.sql.Connection;

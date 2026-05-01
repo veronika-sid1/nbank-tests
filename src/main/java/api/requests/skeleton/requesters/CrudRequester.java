@@ -12,6 +12,8 @@ import api.requests.skeleton.HttpRequest;
 import api.requests.skeleton.interfaces.CrudEndpointInterface;
 import org.apache.http.HttpStatus;
 
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 
 public class CrudRequester extends HttpRequest implements CrudEndpointInterface, GetAllEndpointInterface {
@@ -63,6 +65,16 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
     }
 
     @Override
+    public ValidatableResponse get(String pathParamName, Object pathParamValue) {
+        return given()
+                .spec(requestSpecification)
+                .pathParam(pathParamName, pathParamValue)
+                .get(endpoint.getUrl())
+                .then()
+                .spec(responseSpecification);
+    }
+
+    @Override
     public ValidatableResponse update(BaseModel model) {
         var body = model == null ? "" : model;
         return given()
@@ -89,6 +101,16 @@ public class CrudRequester extends HttpRequest implements CrudEndpointInterface,
     public ValidatableResponse getAll(Class<?> clazz) {
         return given()
                 .spec(requestSpecification)
+                .get(endpoint.getUrl())
+                .then().assertThat()
+                .spec(responseSpecification);
+    }
+
+    @Override
+    public ValidatableResponse getAll(Class<?> clazz, String pathParam, Object valueParam) {
+        return given()
+                .spec(requestSpecification)
+                .pathParam(pathParam, valueParam)
                 .get(endpoint.getUrl())
                 .then().assertThat()
                 .spec(responseSpecification);

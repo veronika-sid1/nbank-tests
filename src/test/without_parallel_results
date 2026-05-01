@@ -4,18 +4,18 @@
     Thread main: Test finished iteration1.ui.CreateUserTest.adminCannotCreateUserWithInvalidDataTest, test duration 10218 ms
     Thread main: Test finished iteration1.ui.LoginUserTest.userCanLoginWithCorrectDataTest, test duration 3440 ms
     Thread main: Test finished iteration1.ui.LoginUserTest.adminCanLoginWithCorrectDataTest, test duration 3077 ms
-    Thread main: Test finished iteration2.api.DepositTest.userWithInvalidAuthCannotDeposit, test duration 1843 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 1100 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 803 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 791 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositInvalidAmount, test duration 897 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 760 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 699 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 836 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCanDepositValidAmounts, test duration 785 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositToNonExistentAccount, test duration 408 ms
-    Thread main: Test finished iteration2.api.DepositTest.unauthorizedUserCannotDeposit, test duration 577 ms
-    Thread main: Test finished iteration2.api.DepositTest.userCannotDepositToAnotherUsersAccount, test duration 1274 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userWithInvalidAuthCannotDeposit, test duration 1843 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCannotDepositInvalidAmount, test duration 1100 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCannotDepositInvalidAmount, test duration 803 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCannotDepositInvalidAmount, test duration 791 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCannotDepositInvalidAmount, test duration 897 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCanDepositValidAmounts, test duration 760 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCanDepositValidAmounts, test duration 699 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCanDepositValidAmounts, test duration 836 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCanDepositValidAmounts, test duration 785 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCannotDepositToNonExistentAccount, test duration 408 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.unauthorizedUserCannotDeposit, test duration 577 ms
+    Thread main: Test finished iteration2.beforeMocks.DepositTest.userCannotDepositToAnotherUsersAccount, test duration 1274 ms
     Thread main: Test finished iteration2.api.NameTest.userCanEditName, test duration 707 ms
     Thread main: Test finished iteration2.api.NameTest.unauthorizedUserCannotSpecifyName, test duration 372 ms
     Thread main: Test finished iteration2.api.NameTest.invalidAuthUserCannotSpecifyName, test duration 375 ms
@@ -26,24 +26,24 @@
     Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 473 ms
     Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 442 ms
     Thread main: Test finished iteration2.api.NameTest.userCannotSpecifyInvalidNames, test duration 408 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferToAnotherUsersAccount, test duration 1402 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferFromSomeoneElsesAccount, test duration 1317 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferMoneyBetweenAccounts, test duration 1446 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferFromNonExistingAccount, test duration 639 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferAboveBalance, test duration 1265 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1261 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1287 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1225 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferInvalidAmount, test duration 1360 ms
-    Thread main: Test finished iteration2.api.TransferTest.unauthorizedUserCannotTransfer, test duration 1073 ms
-    Thread main: Test finished iteration2.api.TransferTest.userWithInvalidAuthCannotTransfer, test duration 1028 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCannotTransferToNonExistingAccount, test duration 869 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1351 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1199 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1215 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1165 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1178 ms
-    Thread main: Test finished iteration2.api.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1199 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferToAnotherUsersAccount, test duration 1402 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferFromSomeoneElsesAccount, test duration 1317 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferMoneyBetweenAccounts, test duration 1446 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferFromNonExistingAccount, test duration 639 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferAboveBalance, test duration 1265 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferInvalidAmount, test duration 1261 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferInvalidAmount, test duration 1287 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferInvalidAmount, test duration 1225 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferInvalidAmount, test duration 1360 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.unauthorizedUserCannotTransfer, test duration 1073 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userWithInvalidAuthCannotTransfer, test duration 1028 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCannotTransferToNonExistingAccount, test duration 869 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1351 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1199 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1215 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1165 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1178 ms
+    Thread main: Test finished iteration2.beforeMocks.TransferTest.userCanTransferValidAmountsBetweenAccounts, test duration 1199 ms
     Thread main: Test finished iteration2.ui.DepositTest.userCannotMakeDepositWithoutChoosingAccount, test duration 573 ms
     Thread main: Test finished iteration2.ui.DepositTest.userCanMakeDeposit, test duration 2760 ms
     Thread main: Test finished iteration2.ui.DepositTest.userCannotMakeInvalidDeposits, test duration 1593 ms

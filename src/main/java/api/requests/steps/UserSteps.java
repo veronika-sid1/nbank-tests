@@ -1,5 +1,6 @@
 package api.requests.steps;
 
+import api.entities.User;
 import api.models.*;
 import api.requests.skeleton.Endpoint;
 import api.requests.skeleton.requesters.CrudRequester;
@@ -10,6 +11,7 @@ import io.qameta.allure.Step;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class UserSteps {
     private String username;
@@ -54,13 +56,24 @@ public class UserSteps {
                 .orElseThrow(() -> new IllegalArgumentException(ResponseSpecs.ACCOUNT_NOT_FOUND + accId));
     }
 
-    @Step("Transfer amount {transferRequest.amount} to account {transferRequest.receiverAccountId}")
-    public static TransferResponse makeTransfer(CreateUserRequest user, TransferRequest transferRequest) {
+    @Step("Transfer amount to another account")
+    public static TransferResponse transferToAccount(User user, TransferRequest transferRequest) {
         return new ValidatedCrudRequester<TransferResponse>(
-                RequestSpecs.authAsUser(user.getUsername(), user.getPassword()),
+                RequestSpecs.authAsUser(user.getRequest().getUsername(), user.getRequest().getPassword()),
                 Endpoint.TRANSFER,
                 ResponseSpecs.requestReturnsOK())
                 .post(transferRequest);
+    }
+
+    @Step("Transfer amount to another account with fraud check")
+    public static TransferResponse makeTransferWithFraudCheck(User user, TransferRequest transferRequest) {
+        return common.helpers.StepLogger.log(
+                "User " + user.getRequest() + " transfers " + transferRequest.getAmount() + " to " + transferRequest.getReceiverAccountId() + " with fraud check",
+                () -> new ValidatedCrudRequester<TransferResponse>(
+                        RequestSpecs.authAsUser(user.getRequest().getUsername(), user.getRequest().getPassword()),
+                        Endpoint.TRANSFER_WITH_FRAUD_CHECK,
+                        ResponseSpecs.requestReturnsOK()).post(transferRequest)
+        );
     }
 
     @Step("Update name")
@@ -209,5 +222,13 @@ public class UserSteps {
                 Endpoint.CUSTOMER_ACCOUNTS,
                 ResponseSpecs.requestReturnsOK())
                 .getAll(GetUserAccountsResponse[].class);
+    }
+
+    public static List<GetTransitionsResponse> getTransitions(User user, long accountId) {
+        return new ValidatedCrudRequester<GetTransitionsResponse>(
+                RequestSpecs.authAsUser(user.getRequest().getUsername(), user.getRequest().getPassword()),
+                Endpoint.GET_TRANSACTIONS,
+                ResponseSpecs.requestReturnsOK())
+                .getAll(GetTransitionsResponse[].class, "accountId", accountId);
     }
 }

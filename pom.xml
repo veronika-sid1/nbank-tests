@@ -96,6 +96,11 @@
             <artifactId>postgresql</artifactId>
             <version>42.7.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>3.4.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -166,6 +171,4 @@
             </plugin>
         </plugins>
     </build>
-
-
 </project>

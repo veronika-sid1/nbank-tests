@@ -1,40 +1,41 @@
 services:
-  backend:
-    image: nobugsme/nbank:with_database_with_fix
-    ports:
-      - "4111:4111"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nbank
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
-    depends_on:
-      - postgres
-    networks:
-      - nbank-network
-
   postgres:
-    image: postgres:15-alpine
-    ports:
-      - "5433:5432"
+    image: postgres:15
+    container_name: nbank-postgres
     environment:
-      - POSTGRES_DB=nbank
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_DB: nbank
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - nbank-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d nbank"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-networks:
-  nbank-network:
-    name: nbank-network
+  nbank:
+    image: nobugsme/nbank:with_fraud_check_with_transfer_fix
+    container_name: nbank-app
+    ports:
+      - "4111:4111"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nbank
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      FRAUD_DETECTION_SERVICE_URL: http://host.docker.internal:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4111/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   postgres_data:
-    driver: local

@@ -10,6 +10,7 @@ import api.requests.skeleton.interfaces.CrudEndpointInterface;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest implements CrudEndpointInterface, GetAllEndpointInterface {
     private final CrudRequester crudRequester;
@@ -40,6 +41,13 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     }
 
     @Override
+    public T get(String pathParamName, Object pathParamValue) {
+        return (T) crudRequester.get(pathParamName, pathParamValue)
+                .extract()
+                .as(endpoint.getResponseModel());
+    }
+
+    @Override
     public T update(BaseModel model) {
         return (T) crudRequester.update(model).extract().as(endpoint.getResponseModel());
     }
@@ -52,6 +60,12 @@ public class ValidatedCrudRequester<T extends BaseModel> extends HttpRequest imp
     @Override
     public List<T> getAll(Class<?> clazz) {
         T[] array = (T[]) crudRequester.getAll(clazz).extract().as(clazz);
+        return Arrays.asList(array);
+    }
+
+    @Override
+    public List<T> getAll(Class<?> clazz, String pathParam, Object valueParam) {
+        T[] array = (T[]) crudRequester.getAll(clazz, pathParam, valueParam).extract().as(clazz);
         return Arrays.asList(array);
     }
 }

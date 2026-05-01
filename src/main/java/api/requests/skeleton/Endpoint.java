@@ -65,6 +65,24 @@ public enum Endpoint {
             "/customer/profile",
             BaseModel.class,
             GetProfileResponse.class
+    ),
+
+    TRANSFER_WITH_FRAUD_CHECK(
+            "/accounts/transfer-with-fraud-check",
+            TransferRequest.class,
+            TransferResponse.class
+    ),
+
+    FRAUD_CHECK_STATUS(
+            "/accounts/fraud-check/{transactionId}",
+            BaseModel.class,
+            FraudCheckResponse.class
+    ),
+
+    GET_TRANSACTIONS(
+            "/accounts/{accountId}/transactions",
+            BaseModel.class,
+            GetTransitionsResponse.class
     );
 
     private final String url;

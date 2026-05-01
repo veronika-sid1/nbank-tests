@@ -1,4 +1,4 @@
-package iteration2.api;
+package iteration2.beforeMocks;
 
 import api.dao.AccountDao;
 import api.dao.comparison.DaoAndModelAssertions;
@@ -39,7 +39,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(amount)
                 .build();
 
@@ -84,7 +84,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(amount)
                 .build();
 
@@ -122,7 +122,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(amount)
                 .build();
 
@@ -156,7 +156,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(amount)
                 .build();
 
@@ -184,7 +184,7 @@ public class DepositTest extends BaseTest {
         usersToDelete.add(user.getResponse().getId());
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(RequestSpecs.NON_EXISTENT_ACCOUNT_ID)
+                .accountId(RequestSpecs.NON_EXISTENT_ACCOUNT_ID)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -219,7 +219,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(secondUserAccId)
+                .accountId(secondUserAccId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -274,7 +274,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(secondUserAccId)
+                .accountId(secondUserAccId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -315,7 +315,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -347,7 +347,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -380,7 +380,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -410,7 +410,7 @@ public class DepositTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accId)
+                .accountId(accId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 

@@ -1,12 +1,14 @@
-package iteration2.api;
+package iteration2.beforeMocks;
 
 import api.dao.AccountDao;
 import api.dao.comparison.DaoAndModelAssertions;
 import api.entities.User;
 import api.generators.RandomData;
+import api.generators.TransferRequestGenerator;
 import api.helpers.TestHelpers;
 import api.models.*;
 import api.models.comparison.ModelAssertions;
+import api.requests.steps.AccountSteps;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.DataBaseSteps;
 import api.requests.steps.UserSteps;
@@ -14,6 +16,7 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 import base.BaseTest;
 import common.annotations.APIVersion;
+import common.annotations.FraudCheckMock;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,6 +33,8 @@ public class TransferTest extends BaseTest {
     @DisplayName("User can transfer money between his accounts")
     @Test
     public void userCanTransferMoneyBetweenAccounts() {
+        double amountRequest = RandomData.getRandomValidDepositAmount();
+
         User user = AdminSteps.createUser();
         usersToDelete.add(user.getResponse().getId());
 
@@ -47,8 +52,8 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
-                .balance(RandomData.getRandomValidDepositAmount())
+                .accountId(senderAccountId)
+                .amount(amountRequest)
                 .build();
 
         UserSteps.makeDeposit(user.getRequest(), depositRequest);
@@ -57,14 +62,14 @@ public class TransferTest extends BaseTest {
         GetUserAccountsResponse afterDepositReceiverAccount = UserSteps.getAccountById(user.getRequest(), receiverAccountId);
 
         softly.assertThat(afterDepositSenderAccount.getBalance())
-                .isEqualTo(depositRequest.getBalance());
+                .isEqualTo(amountRequest);
         softly.assertThat(afterDepositReceiverAccount.getBalance())
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         TransferRequest transferRequest = TransferRequest.builder()
                 .senderAccountId(senderAccountId)
                 .receiverAccountId(receiverAccountId)
-                .amount(RandomData.getRandomValidTransferLessOrEqualDeposit(depositRequest.getBalance()))
+                .amount(RandomData.getRandomValidTransferLessOrEqualDeposit(amountRequest))
                 .build();
 
         TransferResponse transferResponse = UserSteps.makeTransfer(user.getRequest(), transferRequest);
@@ -77,83 +82,74 @@ public class TransferTest extends BaseTest {
         GetUserAccountsResponse afterTransferReceiverAccount = UserSteps.getAccountById(user.getRequest(), receiverAccountId);
 
         softly.assertThat(afterTransferSenderAccount.getBalance())
-                .isCloseTo(depositRequest.getBalance() - transferRequest.getAmount(), within(0.01));
+                .isCloseTo(amountRequest - transferRequest.getAmount(), within(0.01));
         softly.assertThat(afterTransferReceiverAccount.getBalance())
                 .isCloseTo(RequestSpecs.INITIAL_BALANCE + transferRequest.getAmount(), within(0.01));
     }
 
-    @APIVersion("with_database")
+
+    @APIVersion("with_fraud_check_with_transfer_fix")
     @DisplayName("User can transfer money between his accounts")
     @Test
+    @FraudCheckMock
     public void userCanTransferMoneyBetweenAccountsWithDB() {
+        double depositAmount = RandomData.getRandomValidDepositAmount();
+        double transferAmount = RandomData.getRandomValidTransferLessOrEqualDeposit(depositAmount);
         User user = AdminSteps.createUser();
         usersToDelete.add(user.getResponse().getId());
 
-        CreateAccountResponse createAccountResponse = UserSteps.createAccount(user.getRequest());
-        long senderAccountId = createAccountResponse.getId();
-        CreateAccountResponse createAccountResponseSecond = UserSteps.createAccount(user.getRequest());
-        long receiverAccountId = createAccountResponseSecond.getId();
+        CreateAccountResponse account = UserSteps.createAccount(user.getRequest());
+        long senderAccountId = account.getId();
+        CreateAccountResponse accountSecond = UserSteps.createAccount(user.getRequest());
+        long receiverAccountId = accountSecond.getId();
+        AccountSteps accountSteps = new AccountSteps(user.getRequest().getUsername(), user.getRequest().getPassword());
+
         //accountsToDelete.put(senderAccountId, user.getRequest());
         //accountsToDelete.put(receiverAccountId, user.getRequest());
 
-        GetUserAccountsResponse beforeTransferSenderAccount = UserSteps.getAccountById(user.getRequest(), senderAccountId);
-        AccountDao accountDao = DataBaseSteps.getAccountByAccountNumber(createAccountResponse.getAccountNumber());
-        DaoAndModelAssertions.assertThat(beforeTransferSenderAccount, accountDao).match();
+        accountSteps.assertAccountDBInfo(user, account);
+        accountSteps.assertAccountDBInfo(user, accountSecond);
 
-        GetUserAccountsResponse beforeTransferReceiverAccount = UserSteps.getAccountById(user.getRequest(), receiverAccountId);
-        AccountDao accountDaoSecond = DataBaseSteps.getAccountByAccountNumber(createAccountResponseSecond.getAccountNumber());
-        DaoAndModelAssertions.assertThat(beforeTransferReceiverAccount, accountDaoSecond).match();
+        GetUserAccountsResponse beforeTransferSenderAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse beforeTransferReceiverAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         softly.assertThat(beforeTransferSenderAccount.getBalance())
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
         softly.assertThat(beforeTransferReceiverAccount.getBalance())
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
-        DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
-                .balance(RandomData.getRandomValidDepositAmount())
-                .build();
+        accountSteps.depositToAccount(senderAccountId, depositAmount);
 
-        UserSteps.makeDeposit(user.getRequest(), depositRequest);
+        accountSteps.assertAccountDBInfo(user, account);
+        accountSteps.assertAccountDBInfo(user, accountSecond);
 
-        GetUserAccountsResponse afterDepositSenderAccount = UserSteps.getAccountById(user.getRequest(), senderAccountId);
-        GetUserAccountsResponse afterDepositReceiverAccount = UserSteps.getAccountById(user.getRequest(), receiverAccountId);
-        AccountDao accountDaoAfterDepositSenderAccount = DataBaseSteps.getAccountByAccountNumber(createAccountResponse.getAccountNumber());
-        AccountDao accountDaoAfterDepositReceiverAccount = DataBaseSteps.getAccountByAccountNumber(createAccountResponseSecond.getAccountNumber());
-
-        DaoAndModelAssertions.assertThat(afterDepositSenderAccount, accountDaoAfterDepositSenderAccount).match();
-        DaoAndModelAssertions.assertThat(afterDepositReceiverAccount, accountDaoAfterDepositReceiverAccount).match();
+        GetUserAccountsResponse afterDepositSenderAccount = UserSteps.getAccountById(user.getRequest(), account.getId());
+        GetUserAccountsResponse afterDepositReceiverAccount = UserSteps.getAccountById(user.getRequest(), accountSecond.getId());
 
         softly.assertThat(afterDepositSenderAccount.getBalance())
-                .isEqualTo(depositRequest.getBalance());
+                .isEqualTo(depositAmount);
         softly.assertThat(afterDepositReceiverAccount.getBalance())
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
-        TransferRequest transferRequest = TransferRequest.builder()
-                .senderAccountId(senderAccountId)
-                .receiverAccountId(receiverAccountId)
-                .amount(RandomData.getRandomValidTransferLessOrEqualDeposit(depositRequest.getBalance()))
-                .build();
+        TransferRequest transferRequest = TransferRequestGenerator.makeRequest(senderAccountId, receiverAccountId, transferAmount);
+        TransferResponse transferResponse = UserSteps.transferToAccount(user, transferRequest);
 
-        TransferResponse transferResponse = UserSteps.makeTransfer(user.getRequest(), transferRequest);
-
-        AccountDao accountDaoAfterTransfer = DataBaseSteps.getAccountByAccountNumber(createAccountResponseSecond.getAccountNumber());
+        AccountDao accountDaoAfterTransfer = DataBaseSteps.getAccountByAccountNumber(accountSecond.getAccountNumber());
         DaoAndModelAssertions.assertThat(transferResponse, accountDaoAfterTransfer).match();
         ModelAssertions.assertThatModels(transferRequest, transferResponse).match();
 
-        AccountDao accountDaoAfterTransferSender = DataBaseSteps.getAccountByAccountNumber(createAccountResponse.getAccountNumber());
-        softly.assertThat(accountDaoAfterTransferSender.getBalance())
-                .isCloseTo(depositRequest.getBalance() - transferRequest.getAmount(), within(0.01));
+        softly.assertThat(accountDaoAfterTransfer.getBalance())
+                .isCloseTo(transferAmount, within(0.01));
         softly.assertThat(transferResponse.getMessage()).isEqualTo(ResponseSpecs.TRANSFER_SUCCESSFUL);
 
         GetUserAccountsResponse afterTransferSenderAccount = UserSteps.getAccountById(user.getRequest(), senderAccountId);
         GetUserAccountsResponse afterTransferReceiverAccount = UserSteps.getAccountById(user.getRequest(), receiverAccountId);
 
-        double accBalanceDB = DataBaseSteps.getBalanceByAccountNumber(accountDao.getAccountNumber());
-        double accBalanceSecondDB = DataBaseSteps.getBalanceByAccountNumber(accountDaoSecond.getAccountNumber());
+        double accBalanceDB = DataBaseSteps.getBalanceByAccountNumber(account.getAccountNumber());
+        double accBalanceSecondDB = DataBaseSteps.getBalanceByAccountNumber(accountSecond.getAccountNumber());
 
         softly.assertThat(afterTransferSenderAccount.getBalance())
-                .isCloseTo(depositRequest.getBalance() - transferRequest.getAmount(), within(0.01));
+                .isCloseTo(depositAmount - transferRequest.getAmount(), within(0.01));
         softly.assertThat(afterTransferReceiverAccount.getBalance())
                 .isCloseTo(RequestSpecs.INITIAL_BALANCE + transferRequest.getAmount(), within(0.01));
 
@@ -186,7 +182,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountUserId)
+                .accountId(senderAccountUserId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -251,7 +247,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -326,7 +322,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RequestSpecs.MAX_DEPOSIT)
                 .build();
 
@@ -389,7 +385,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RequestSpecs.MAX_DEPOSIT)
                 .build();
 
@@ -473,7 +469,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RequestSpecs.MAX_DEPOSIT)
                 .build();
 
@@ -536,7 +532,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RequestSpecs.MAX_DEPOSIT)
                 .build();
 
@@ -604,7 +600,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -666,7 +662,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -737,7 +733,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(secondUserAccountId)
+                .accountId(secondUserAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -801,7 +797,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(secondUserAccountId)
+                .accountId(secondUserAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -864,7 +860,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -911,7 +907,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -1037,7 +1033,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -1096,7 +1092,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -1161,7 +1157,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
@@ -1220,7 +1216,7 @@ public class TransferTest extends BaseTest {
                 .isEqualTo(RequestSpecs.INITIAL_BALANCE);
 
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(senderAccountId)
+                .accountId(senderAccountId)
                 .balance(RandomData.getRandomValidDepositAmount())
                 .build();
 
